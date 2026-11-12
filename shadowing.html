@@ -402,13 +402,51 @@ function setStatus(msg, ok = false) {
 }
 
 // ---------- 音声 ----------
+// Safariでは発話オブジェクトの参照が消えるとonendが呼ばれないため、ここで保持する
+let currentUtter = null;
+let enVoice = null;
+
+function pickVoice() {
+  const vs = speechSynthesis.getVoices();
+  enVoice = vs.find(v => v.lang === "en-US") || vs.find(v => v.lang.startsWith("en")) || null;
+}
+if (speechOK) {
+  pickVoice();
+  speechSynthesis.onvoiceschanged = pickVoice;
+}
+
+// Safariは最初の発話をユーザー操作の中で行う必要があるため、無音の発話で再生を有効化する
+function unlockSpeech() {
+  if (!speechOK) return;
+  const u = new SpeechSynthesisUtterance(" ");
+  u.volume = 0;
+  speechSynthesis.speak(u);
+}
+
 function speak(text, onEnd) {
-  speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text);
+  currentUtter = u;
   u.lang = "en-US";
+  if (enVoice) u.voice = enVoice;
   u.rate = parseFloat($("rate").value);
-  u.onend = onEnd;
-  u.onerror = e => { if (e.error !== "interrupted" && e.error !== "canceled") setStatus("音声を再生できませんでした: " + e.error); };
+
+  let done = false;
+  const finish = () => {
+    // 停止・移動で無効になった発話からの呼び出しは無視する（二重再生防止）
+    if (done || currentUtter !== u) return;
+    done = true;
+    clearTimeout(watchdog);
+    currentUtter = null;
+    onEnd();
+  };
+  // onendが来ない場合の保険：文の長さに応じて先へ進む
+  const watchdog = setTimeout(finish, 2000 + text.length * 120);
+
+  u.onend = finish;
+  u.onerror = e => {
+    if (e.error !== "interrupted" && e.error !== "canceled") setStatus("音声を再生できませんでした: " + e.error);
+    finish();
+  };
   speechSynthesis.speak(u);
 }
 
@@ -457,6 +495,7 @@ function advance(dir) {
 
 function play() {
   if (!state.queue.length) return;
+  unlockSpeech();
   state.playing = true;
   updatePlayButton();
   setStatus("再生中：英文を聞いて、間に声に出して繰り返しましょう", true);
@@ -466,6 +505,7 @@ function play() {
 function stop() {
   state.playing = false;
   clearTimeout(state.timer);
+  currentUtter = null;
   if (speechOK) speechSynthesis.cancel();
   updatePlayButton();
   if ($("status").textContent.startsWith("再生中")) setStatus("一時停止中");
@@ -476,12 +516,13 @@ function togglePlay() { state.playing ? stop() : play(); }
 function jump(dir) {
   const wasPlaying = state.playing;
   clearTimeout(state.timer);
+  currentUtter = null;
   if (speechOK) speechSynthesis.cancel();
   state.playing = false;
   state.idx = Math.max(0, Math.min(state.queue.length - 1, state.idx + dir));
   state.pass = 0;
   render();
-  if (wasPlaying) play(); else updatePlayButton();
+  if (wasPlaying) setTimeout(play, 150); else updatePlayButton();
 }
 
 // ---------- イベント ----------
