@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ja">
+<meta name="robots" content="noindex, nofollow">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>シャドウイング練習</title>
+<style>
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --text: #1d2330; --muted: #6b7280;
+  --accent: #2563eb; --accent-text: #ffffff; --line: #e3e6ec; --ok: #16a34a;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1218; --surface: #181c25; --text: #e8ebf1; --muted: #9aa3b2;
+    --accent: #60a5fa; --accent-text: #0b1020; --line: #2a2f3a; --ok: #4ade80;
+    color-scheme: dark;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", "Segoe UI", sans-serif;
+  padding: env(safe-area-inset-top, 0px) 16px env(safe-area-inset-bottom, 0px);
+  min-height: 100vh;
+}
+.wrap { max-width: 640px; margin: 0 auto; padding: 20px 0 40px; }
+h1 { font-size: 1.25rem; margin: 0 0 16px; }
+.card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+  padding: 20px; margin-bottom: 14px;
+}
+.meta { display: flex; justify-content: space-between; color: var(--muted); font-size: .85rem; margin-bottom: 10px; }
+.bar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; margin-bottom: 18px; }
+.bar > div { height: 100%; background: var(--accent); width: 0; transition: width .3s; }
+#ja { color: var(--muted); font-size: 1rem; line-height: 1.6; min-height: 3em; }
+#en { font-size: 1.35rem; line-height: 1.5; font-weight: 600; margin-top: 10px; min-height: 4.5em; cursor: pointer; }
+#en.hidden { filter: blur(8px); user-select: none; }
+.hint { color: var(--muted); font-size: .8rem; margin-top: 8px; }
+.controls { display: flex; gap: 10px; justify-content: center; align-items: center; margin: 6px 0 4px; }
+button {
+  font: inherit; cursor: pointer; border: 1px solid var(--line); background: var(--surface);
+  color: var(--text); border-radius: 10px; padding: 10px 14px; min-width: 44px;
+}
+button:hover { border-color: var(--accent); }
+button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 700; padding: 12px 26px; }
+button.small { font-size: .85rem; padding: 6px 10px; min-width: 0; }
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 18px; }
+label.field { display: flex; flex-direction: column; gap: 6px; font-size: .85rem; color: var(--muted); }
+label.field span b { color: var(--text); }
+select, textarea {
+  font: inherit; background: var(--bg); color: var(--text); border: 1px solid var(--line);
+  border-radius: 8px; padding: 8px;
+}
+textarea { width: 100%; min-height: 120px; font-size: .8rem; font-family: ui-monospace, monospace; }
+input[type=range] { width: 100%; }
+.check { display: flex; align-items: center; gap: 6px; font-size: .9rem; }
+.status { font-size: .85rem; color: var(--muted); margin-top: 8px; }
+.status.ok { color: var(--ok); }
+details summary { cursor: pointer; color: var(--muted); font-size: .9rem; }
+.actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>シャドウイング練習</h1>
+
+  <div class="card">
+    <div class="meta"><span id="counter">0 / 0</span><span id="catLabel"></span></div>
+    <div class="bar"><div id="progress"></div></div>
+    <div id="ja">読み込み中…</div>
+    <div id="en" title="タップで表示/非表示">&nbsp;</div>
+    <div class="hint">英文をタップすると表示を切り替えられます（暗記チェック用）</div>
+
+    <div class="controls" style="margin-top:18px">
+      <button id="prev" aria-label="前へ">⏮</button>
+      <button id="play" class="primary">▶ 再生</button>
+      <button id="next" aria-label="次へ">⏭</button>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <label class="field">カテゴリ
+        <select id="category">
+          <option value="">すべて</option>
+          <option value="Meeting">Meeting（会議）</option>
+          <option value="Presentation">Presentation（プレゼン）</option>
+        </select>
+      </label>
+      <div class="field" style="justify-content:flex-end">
+        <label class="check"><input type="checkbox" id="shuffle"> ランダム順</label>
+        <label class="check"><input type="checkbox" id="loop" checked> 最後まで来たら繰り返す</label>
+      </div>
+      <label class="field"><span>話す速度：<b id="rateVal">1.0</b></span>
+        <input type="range" id="rate" min="0.5" max="1.5" step="0.1" value="1"></label>
+      <label class="field"><span>シャドウイングの間：<b id="gapVal">5</b> 秒</span>
+        <input type="range" id="gap" min="2" max="12" step="1" value="5"></label>
+      <label class="field"><span>1文の繰り返し回数：<b id="repVal">1</b> 回</span>
+        <input type="range" id="repeat" min="1" max="3" step="1" value="1"></label>
+      <label class="field"><span>表示</span>
+        <label class="check"><input type="checkbox" id="showEn" checked> 英文を表示</label>
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <details>
+      <summary>フレーズデータの読み込み（全データを貼り付け）</summary>
+      <p class="hint" style="margin:10px 0 8px">お手元の配列（{ category: "...", ja: "...", en: "..." } の行）をそのまま貼り付けて「読み込む」を押してください。</p>
+      <textarea id="input" placeholder='{ category: "Meeting", ja: "...", en: "..." },'></textarea>
+      <div class="actions">
+        <button id="load" class="small primary">読み込む</button>
+        <button id="reset" class="small">サンプルに戻す</button>
+      </div>
+      <div class="status" id="loadMsg"></div>
+    </details>
+  </div>
+</div>
+
+<script>
+// サンプル（起動直後に表示されるデータ。全データは上の欄に貼り付けてください）
+const SAMPLE = `
+// ==========================================
+    // 会議英語 (Meeting English: 1-100)
+    // ==========================================
+    { category: "Meeting", ja: "本日はお時間をいただきありがとうございます。", en: "Thank you all for taking the time to join today." },
+    { category: "Meeting", ja: "全員揃いましたので、本題に入りましょう。", en: "Now that everyone is here, let’s get down to business." },
+    { category: "Meeting", ja: "皆さんおはようございます。ご参加ありがとうございます。", en: "Good morning, everyone. Thanks for dialing in." },
+    { category: "Meeting", ja: "始める前に、全員に音声がクリアに聞こえているか確認させてください。", en: "Before we begin, let’s quickly confirm that everyone can hear me clearly." },
+    { category: "Meeting", ja: "急な招集にもかかわらずご都合をつけていただき感謝します。", en: "I appreciate everyone making time on short notice." },
+    { category: "Meeting", ja: "始める前に、簡単に自己紹介を一周行いましょう。", en: "Let’s do a quick round of introductions before we start." },
+    { category: "Meeting", ja: "まだ数名揃っていませんが、定刻ですので始めましょう。", en: "It looks like we are still waiting for a few colleagues, but let’s start on time." },
+    { category: "Meeting", ja: "本日の進行役を務めさせていただきます。", en: "I will be chairing today’s session." },
+    { category: "Meeting", ja: "どなたか本日の議事録を担当していただけますか？", en: "Could someone volunteer to take the minutes today?" },
+    { category: "Meeting", ja: "本日は肩肘張らずオープンな議論にしましょう。", en: "Let’s keep today’s discussion casual and open." },
+    { category: "Meeting", ja: "本日の主たる目的はプロジェクトの工程表を確定させることです。", en: "Our primary objective today is to decide on the project roadmap." },
+    { category: "Meeting", ja: "本日のアジェンダには3つの主要な議題があります。", en: "We have three main topics on today’s agenda." },
+    { category: "Meeting", ja: "この会議の終了時までに、予算配分のすり合わせを完了する必要があります。", en: "By the end of this meeting, we need to align on budget allocation." },
+    { category: "Meeting", ja: "まず先月の実績を振り返り、続いて次回キャンペーン計画に入ります。", en: "First, we will review last month's performance, followed by the upcoming campaign plan." },
+    { category: "Meeting", ja: "アジェンダに追加したい議題はありますか？", en: "Does anyone want to add any other points to the agenda?" },
+    { category: "Meeting", ja: "本日はリソース管理に焦点を絞って議論します。", en: "Our focus today will be strictly on resource management." },
+    { category: "Meeting", ja: "契約に関する未解決の質問を本日中に全て解決したいと考えています。", en: "I would like to resolve all outstanding questions regarding the contract today." },
+    { category: "Meeting", ja: "本ミーティングの目的は進捗共有とボトルネックの解消です。", en: "The purpose of this call is to share updates and eliminate bottlenecks." },
+    { category: "Meeting", ja: "前回の議事録を手短に振り返りましょう。", en: "Let’s quickly review the notes from our previous meeting." },
+    { category: "Meeting", ja: "本日は3つの戦略案を検討し、最善のものを1つ選定します。", en: "We are here to evaluate three strategic options and pick the best one." },
+    { category: "Meeting", ja: "ケンさん、開発の最新状況を共有していただけますか？", en: "Ken, could you share the latest development updates with us?" },
+    { category: "Meeting", ja: "市場分析についてはサラさんにバトンタッチしたいと思います。", en: "I’d like to hand it over to Sarah for the market analysis." },
+    { category: "Meeting", ja: "デイビッドさん、この進め方についてどう思われますか？", en: "What are your thoughts on this approach, David?" },
+    { category: "Meeting", ja: "この件についてエンジニアチームの意見を聞いてみましょう。", en: "Let’s hear from the engineering team on this matter." },
+    { category: "Meeting", ja: "この提案に対して初期フィードバックがある方はいらっしゃいますか？", en: "Does anyone have initial feedback on this proposal?" },
+    { category: "Meeting", ja: "まだ発言されていない方からのご意見も伺いたいです。", en: "I'd appreciate input from those who haven't spoken yet." },
+    { category: "Meeting", ja: "リサさん、法務の観点から何か補足はありますか？", en: "Lisa, do you have anything to add from a legal perspective?" },
+    { category: "Meeting", ja: "潜在的なリスクにお気づきの方は遠慮なく発言してください。", en: "Feel free to speak up if you see any potential risks." },
+    { category: "Meeting", ja: "この決定に至った背景・理由を順を追って説明していただけますか？", en: "Could you walk us through the reasoning behind this decision?" },
+    { category: "Meeting", ja: "どなたから議論を始めますか？", en: "Who would like to kick off the discussion?" },
+    { category: "Meeting", ja: "私の見解では、現在のスケジュールは少々タイトすぎます。", en: "From my perspective, the current timeline is slightly too aggressive." },
+    { category: "Meeting", ja: "私の考えとしては、新機能の追加よりも安定性を優先すべきです。", en: "In my opinion, we should prioritize stability over adding new features." },
+    { category: "Meeting", ja: "ユーザー調査に基づくと、当サービスの需要は急増しています。", en: "Based on our user research, demand for this service is rapidly growing." },
+    { category: "Meeting", ja: "このソリューションが最も費用対効果が高いと考えています。", en: "I believe this solution offers the highest return on investment." },
+    { category: "Meeting", ja: "私の懸念点は、サプライチェーンが需要に追いつけるかどうかです。", en: "My main concern is whether the supply chain can keep up with demand." },
+    { category: "Meeting", ja: "私の知る限り、競合他社はまだ同様の機能を投入していません。", en: "As far as I know, competitors have not launched a similar feature yet." },
+    { category: "Meeting", ja: "リリース前に追加の検証が不可欠であると強く感じています。", en: "I strongly feel that we need additional validation before launch." },
+    { category: "Meeting", ja: "顧客にとってコストが最大の障壁になっているように見受けられます。", en: "It seems to me that cost is the biggest barrier for our clients." },
+    { category: "Meeting", ja: "率直に申し上げますと、初期結果は期待を下回るものでした。", en: "To be completely frank, the preliminary results fell short of expectations." },
+    { category: "Meeting", ja: "サポート体制の強化こそが最優先事項であると考えます。", en: "I would argue that strengthening our support team is our top priority." },
+    { category: "Meeting", ja: "その見立てに完全に同意します。", en: "I completely agree with that assessment." },
+    { category: "Meeting", ja: "まさに私が言おうとしていたことです。", en: "You took the words right out of my mouth." },
+    { category: "Meeting", ja: "非常に腑に落ちました / 納得できます。", en: "That makes total sense to me." },
+    { category: "Meeting", ja: "アレックスさんの意見に補足すると、この手順は自動化も可能です。", en: "Building on what Alex just said, we could also automate this process." },
+    { category: "Meeting", ja: "ご提案のアクションプランに全面的に賛同します。", en: "I'm totally aligned with your recommended course of action." },
+    { category: "Meeting", ja: "的確なご指摘です。間違いなく考慮に入れるべきです。", en: "That's a valid point, and we should definitely factor it in." },
+    { category: "Meeting", ja: "ユーザーの課題を直接解決できるため、この提案を支持します。", en: "I support this proposal because it directly addresses user pain points." },
+    { category: "Meeting", ja: "東南アジア市場への進出に対する前向きな見方に同感です。", en: "I share your optimism about the expansion into Southeast Asia." },
+    { category: "Meeting", ja: "双方のチームにとって納得感のある落としどころに思えます。", en: "That sounds like a sensible compromise for both teams." },
+    { category: "Meeting", ja: "予算枠内に収まる限り、この計画に異存はありません。", en: "I'm on board with this plan as long as the budget stays within limits." },
+    { category: "Meeting", ja: "おっしゃる意味は分かりますが、リソースの制約も考慮する必要があります。", en: "I see your point, but we need to consider the resource constraints." },
+    { category: "Meeting", ja: "それが根本的な問題解決につながるか、まだ確信が持てません。", en: "I'm not entirely convinced that this will solve the underlying issue." },
+    { category: "Meeting", ja: "利用者がすぐに適応するという前提には、恐縮ながら同意しかねます。", en: "I respectfully disagree with the assumption that users will adapt quickly." },
+    { category: "Meeting", ja: "興味深いアイデアですが、実現可能性に懸念が残ります。", en: "That is an interesting idea, but feasibility might be an issue." },
+    { category: "Meeting", ja: "恐れ入りますが、期待できる見返りよりもリスクが上回っていると考えます。", en: "With all due respect, I believe the risk outweighs the potential reward." },
+    { category: "Meeting", ja: "あいにく、それでは今期の予算枠を超過してしまう恐れがあります。", en: "I'm afraid that might exceed our allocated budget for this quarter." },
+    { category: "Meeting", ja: "最終目標には同意しますが、その進め方には懸念があります。", en: "I agree with the end goal, but I have reservations about the method." },
+    { category: "Meeting", ja: "全面展開する前に、小規模でテストすべきではないでしょうか？", en: "Shouldn't we test this on a smaller scale before a full rollout?" },
+    { category: "Meeting", ja: "理屈は理解できますが、タイミングが適切ではないかもしれません。", en: "I understand the logic, but the timing might not be ideal." },
+    { category: "Meeting", ja: "あえて反論側の立場をとりますが、もしサプライヤーが遅延したらどうしますか？", en: "Let's play devil's advocate for a moment: what if the supplier delays?" },
+    { category: "Meeting", ja: "「優先度が高い」の具体的な意味について詳しく説明していただけますか？", en: "Could you elaborate on what you mean by high-priority?" },
+    { category: "Meeting", ja: "共通認識を持つための確認ですが、延期をご提案されているのですか？", en: "Just to make sure we're on the same page, are you suggesting a delay?" },
+    { category: "Meeting", ja: "これが現場で実際にどう機能するのか、具体例を挙げていただけますか？", en: "Could you give a concrete example of how this would work in practice?" },
+    { category: "Meeting", ja: "私の理解が正しければ、期日は来週金曜日のままで変更ありませんか？", en: "If I understood correctly, the deadline remains next Friday?" },
+    { category: "Meeting", ja: "ベンダーが既に契約を締結済みということでしょうか？", en: "Are you saying that the vendor has already signed the agreement?" },
+    { category: "Meeting", ja: "選択肢Aと選択肢Bの違いを明確にしていただけますか？", en: "Could you clarify the difference between Option A and Option B?" },
+    { category: "Meeting", ja: "最後の数字がうまく聞き取れませんでした。もう一度言っていただけますか？", en: "I didn't quite catch that last number; could you repeat it?" },
+    { category: "Meeting", ja: "その略語は何を指していますか？", en: "What does this acronym stand for?" },
+    { category: "Meeting", ja: "この変更は既存契約にも影響しますか、それとも新規案件のみですか？", en: "Does this change affect existing contracts or only new ones?" },
+    { category: "Meeting", ja: "ご趣旨を正しく捉えられているか、私の言葉で言い直させてください。", en: "Let me rephrase that to ensure I got your point right." },
+    { category: "Meeting", ja: "遮って申し訳ありませんが、1点だけ確認の質問をよろしいですか？", en: "Sorry to interrupt, but could I ask a quick clarifying question?" },
+    { category: "Meeting", ja: "ここで一言挟んでもよろしいでしょうか？", en: "May I jump in here for a second?" },
+    { category: "Meeting", ja: "次のスライドに移る前に、1点だけ補足させていただけますか？", en: "Before you move on to the next slide, could I add one point?" },
+    { category: "Meeting", ja: "割り込み失礼しますが、この障害は今ここで対処すべきです。", en: "Excuse me for cutting in, but we need to address this bottleneck now." },
+    { category: "Meeting", ja: "少しお待ちください、何か誤解が生じているように思われます。", en: "Hold on a moment, I think there is a misunderstanding." },
+    { category: "Meeting", ja: "失礼しました、どうぞ続けてください。終わってから発言します。", en: "Sorry, please go ahead; I’ll hold my thought until you finish." },
+    { category: "Meeting", ja: "質問に移る前に、最後まで説明を言い切らせていただけますか？", en: "Could I just finish my thought before we open it up for questions?" },
+    { category: "Meeting", ja: "まずはマークさんの発言を最後まで聞き、その後に伺いましょう。", en: "Let’s let Mark finish his point first, and then we will come to you." },
+    { category: "Meeting", ja: "ご指摘ありがとうございます。その点は次のパートでお答えします。", en: "Thanks for pointing that out; I will address it in the next section." },
+    { category: "Meeting", ja: "データをお見せするまで、そのご質問は一旦保留にしてもよろしいですか？", en: "Can we park that question for a few minutes while I show the data?" },
+    { category: "Meeting", ja: "スケジュールが少し押していますので、先に進めましょう。", en: "We are running slightly behind schedule, so let’s keep moving." },
+    { category: "Meeting", ja: "本質的な論点に集中して議論を戻しましょう。", en: "Let’s try to stay focused on the core issue." },
+    { category: "Meeting", ja: "重要な論点ですが、本日の会議のスコープからは外れているようです。", en: "That’s a critical topic, but it seems outside the scope of this meeting." },
+    { category: "Meeting", ja: "この件は一旦保留にして、会議外で個別に詰めましょう。", en: "Let’s park this discussion for now and take it offline." },
+    { category: "Meeting", ja: "残り約10分となりましたので、最後の議題へ移りましょう。", en: "We have about ten minutes left, so let’s move to the final item." },
+    { category: "Meeting", ja: "残りの時間はアクションプランの協議に充てたいと思います。", en: "I'd like to spend the remaining time discussing action items." },
+    { category: "Meeting", ja: "細部に時間をかけすぎています。大所高所から見直しましょう。", en: "We are spending too much time on details; let’s look at the big picture." },
+    { category: "Meeting", ja: "追加データが揃う来週まで、この件は据え置きにしませんか？", en: "Can we table this until next week when we have more data?" },
+    { category: "Meeting", ja: "議題3はカバー済みですので、議題4に直行しましょう。", en: "Since we have already covered item three, let's jump straight to item four." },
+    { category: "Meeting", ja: "時間を確認させてください。残り15分です。", en: "Let’s do a quick time-check: we have 15 minutes left." },
+    { category: "Meeting", ja: "本日決定した主要事項を手短に要約しましょう。", en: "Let’s quickly summarize the key decisions we made today." },
+    { category: "Meeting", ja: "改訂版仕様書の作成はどなたがリードしますか？", en: "Who will take the lead on drafting the revised specification?" },
+    { category: "Meeting", ja: "午後5時までに議事録とタスク一覧をメール送付します。", en: "I will send out the meeting minutes along with the action log by 5 PM." },
+    { category: "Meeting", ja: "ジョンさん、ベンダーとの交渉をご担当いただけますでしょうか？", en: "John, are you comfortable owning the vendor negotiations?" },
+    { category: "Meeting", ja: "これらの数値を提出する確定締め切りはいつですか？", en: "What is the firm deadline for submitting these figures?" },
+    { category: "Meeting", ja: "進捗確認のため、来週木曜日の同時間帯に再招集しましょう。", en: "Let's reconvene next Thursday at the same time to review progress." },
+    { category: "Meeting", ja: "水曜日までに共有ドキュメントを確認しコメントを残してください。", en: "Please review the shared document and leave comments by Wednesday." },
+    { category: "Meeting", ja: "私のタスクを確認させてください。QAチームとの調整ですね。", en: "Let me confirm my takeaway: I need to coordinate with the QA team." },
+    { category: "Meeting", ja: "本日は実りある議論をありがとうございました。", en: "Thank you everyone for the productive discussion today." },
+    { category: "Meeting", ja: "他にご意見がなければ、本日の会議を終了いたします。", en: "If there are no further comments, let's wrap up today's meeting." },
+
+    // ==========================================
+    // プレゼン英語 (Presentation English: 101-200)
+    // ==========================================
+    { category: "Presentation", ja: "皆様おはようございます。本日はお集まりいただきありがとうございます。", en: "Good morning, ladies and gentlemen. Thank you for being here today." },
+    { category: "Presentation", ja: "チームを代表して、皆様をセッションに心より歓迎いたします。", en: "On behalf of our team, I’d like to welcome you all to this session." },
+    { category: "Presentation", ja: "なぜ従来のマーケティング施策が成果に結びつかないのか、疑問に思ったことはありませんか？", en: "Have you ever wondered why traditional marketing campaigns fail to convert?" },
+    { category: "Presentation", ja: "私の名前はケンと申し、プロジェクト戦略チームを率いております。", en: "My name is Ken, and I lead the project strategy team." },
+    { category: "Presentation", ja: "本日、次世代の製品ロードマップをご披露できることを嬉しく思います。", en: "Today, I’m excited to unveil our next-generation product roadmap." },
+    { category: "Presentation", ja: "本日のプレゼンテーションの目的は、第3四半期の実績をご報告することです。", en: "The purpose of today’s presentation is to present our Q3 results." },
+    { category: "Presentation", ja: "このプレゼンが終わる頃には、なぜこの投資が実を結ぶのかが明確にご理解いただけます。", en: "By the end of this presentation, you will clearly see why this investment pays off." },
+    { category: "Presentation", ja: "本日は弊社の海外展開に向けた戦略計画の概要をご説明に参りました。", en: "I'm here today to outline our strategic plan for overseas expansion." },
+    { category: "Presentation", ja: "3か月で業務コストを30%削減できるとしたらどうでしょうか。", en: "Imagine reducing your operational overhead by thirty percent in three months." },
+    { category: "Presentation", ja: "本日のプレゼンは論理的な3つのステージに分かれています。", en: "Today's talk is divided into three logical stages." },
+    { category: "Presentation", ja: "私の発表はおよそ20分を予定しております。", en: "My presentation will take roughly twenty minutes." },
+    { category: "Presentation", ja: "まず背景を、次に解決策を、最後に展開計画をお話しします。", en: "First, I’ll provide background; next, our solution; finally, the rollout plan." },
+    { category: "Presentation", ja: "ご質問がございましたら、発表の途中でもいつでもお気軽にお尋ねください。", en: "Please feel free to interrupt me at any time if you have questions." },
+    { category: "Presentation", ja: "プレゼンテーションの最後に十分な質疑応答の時間を設けております。", en: "There will be plenty of time for Q&A at the end of the presentation." },
+    { category: "Presentation", ja: "発表スライドの配布資料はお手元にお配りしております。", en: "I’ve already distributed copies of the presentation slides." },
+    { category: "Presentation", ja: "詳細な参考データは巻末の付録に掲載しております。", en: "You can find the detailed reference data in the appendix." },
+    { category: "Presentation", ja: "計算モデルの詳細が必要な方には、後ほどリンクを共有いたします。", en: "If you need more details on the calculation models, I can share the links afterward." },
+    { category: "Presentation", ja: "私たちが現在直面している課題の確認から始めましょう。", en: "Let's begin by looking at the challenge we currently face." },
+    { category: "Presentation", ja: "利益率を牽引している2つの核心的要因に絞ってお話しします。", en: "I will focus specifically on two core factors driving our profit margin." },
+    { category: "Presentation", ja: "詳細に入る前に、業界全体の背景状況を手短に共有させてください。", en: "Before going into details, let me briefly share the broader industry context." },
+    { category: "Presentation", ja: "背景をご確認いただきましたので、次に私たちの戦略を見ていきましょう。", en: "Now that we have looked at the background, let's turn to our strategy." },
+    { category: "Presentation", ja: "この点がまさに私の第2の論点である「リソース最適化」へとつながります。", en: "This brings me directly to my second point: resource optimization." },
+    { category: "Presentation", ja: "次のトピックに移り、顧客からのフィードバックを検証しましょう。", en: "Moving on to the next topic, let's examine customer feedback." },
+    { category: "Presentation", ja: "少し視野を広げて、市場全体の構図を見渡してみましょう。", en: "Let’s step back for a moment and look at the market landscape." },
+    { category: "Presentation", ja: "財務面のメリットをご説明しましたので、次は技術的リスクに焦点を当てます。", en: "Having covered the financial benefits, I’d like to focus on technical risks." },
+    { category: "Presentation", ja: "では、これが日々の現場業務に実際どう影響するのでしょうか？", en: "So, what does this actually mean for our day-to-day operations?" },
+    { category: "Presentation", ja: "製造フェーズについては以上です。では、流通面はどうでしょうか？", en: "That covers the production phase. Now, what about distribution?" },
+    { category: "Presentation", ja: "それでは、スケジュールに目を向けてみましょう。", en: "Let’s now turn our attention to the timeline." },
+    { category: "Presentation", ja: "全体像を分かりやすく掴んでいただくため、一例をご紹介します。", en: "To put this into perspective, let me share an example." },
+    { category: "Presentation", ja: "それでは、具体的な導入手順を詳しく見ていきましょう。", en: "Now, let's take a closer look at the key implementation steps." },
+    { category: "Presentation", ja: "こちらのグラフをご覧いただくと、着実な右肩上がりの推移がお分かりいただけます。", en: "If you look at this chart, you will see a steady upward trend." },
+    { category: "Presentation", ja: "このスライドは本事業における組織体制を図式化したものです。", en: "This slide illustrates our organizational structure for this venture." },
+    { category: "Presentation", ja: "左側の棒グラフは地域工場の生産量を明確に比較しています。", en: "The bar chart on the left clearly compares output across regional plants." },
+    { category: "Presentation", ja: "こちらの表からお分かりいただける通り、総営業費用は減少しました。", en: "As you can see from this table, total operating expenses decreased." },
+    { category: "Presentation", ja: "縦軸は収益を、横軸は時間の経過を表しています。", en: "The vertical axis represents revenue, while the horizontal axis represents time." },
+    { category: "Presentation", ja: "第3四半期におけるユーザーエンゲージメントの劇的な急増にご注目ください。", en: "Notice the dramatic spike in user engagement in the third quarter." },
+    { category: "Presentation", ja: "この円グラフは顧客セグメント別の売上内訳を示しています。", en: "This pie chart breaks down our revenue by customer segment." },
+    { category: "Presentation", ja: "破線は来年度の業績予測値を示しています。", en: "The dashed line indicates our projected forecast for next year." },
+    { category: "Presentation", ja: "この部分を強調するため、実証実験の結果を拡大して表示します。", en: "To highlight this section, let me zoom in on the pilot results." },
+    { category: "Presentation", ja: "画面上の図は化学処理の工程フローを示したものです。", en: "The diagram on screen depicts the chemical processing workflow." },
+    { category: "Presentation", ja: "売上高は前年同期比で25%と大幅に増加しました。", en: "Sales increased significantly by 25% year-on-year." },
+    { category: "Presentation", ja: "事業コストは当該会計年度を通じてほぼ横ばいで推移しました。", en: "Operational costs remained relatively flat throughout the fiscal year." },
+    { category: "Presentation", ja: "価格改定の直後に需要の急激な落ち込みが見られました。", en: "Demand experienced a sharp drop immediately following the price adjustment." },
+    { category: "Presentation", ja: "当社の顧客基盤は過去6ヶ月間にわたり着実に拡大しました。", en: "Our customer base grew steadily over the past six months." },
+    { category: "Presentation", ja: "生産性は8月にピークに達した後、横ばい状態となりました。", en: "Productivity reached a peak in August before leveling off." },
+    { category: "Presentation", ja: "従来手法と比較して、この新プロセスは処理時間を半減させます。", en: "Compared to traditional methods, this new process cuts cycle time in half." },
+    { category: "Presentation", ja: "これらの数値は新価格モデルの有効性を明確に証明しています。", en: "The figures clearly demonstrate the effectiveness of our new pricing model." },
+    { category: "Presentation", ja: "興味深いことに、欧州市場は当初の予想をはるかに上回る成果を上げました。", en: "Interestingly, the European market performed far better than anticipated." },
+    { category: "Presentation", ja: "顧客定着率と問い合わせ対応速度の間には明らかな相関関係が存在します。", en: "There is an obvious correlation between customer retention and responsiveness." },
+    { category: "Presentation", ja: "この軽微な変動の大部分は季節要因によるものです。", en: "This minor fluctuation is largely due to seasonal factors." },
+    { category: "Presentation", ja: "このスライドから読み取っていただきたい最重要ポイントは「タイミングこそ命」という点です。", en: "The key takeaway from this slide is that timing is everything." },
+    { category: "Presentation", ja: "決して品質を妥協してはならないという点を特に強調しておきたいと思います。", en: "I'd like to emphasize that quality must never be compromised." },
+    { category: "Presentation", ja: "本ソリューションの際立った特徴は、その卓越した拡張性にあります。", en: "What makes this solution unique is its unmatched scalability." },
+    { category: "Presentation", ja: "この目標値は決して楽観的すぎるものではなく、保守的な見積もりである点にご留意ください。", en: "Please remember that this target is conservative, not overly optimistic." },
+    { category: "Presentation", ja: "この指標1つで、当社の事業健全性を最も明確に把握できます。", en: "This single metric is the strongest indicator of our business health." },
+    { category: "Presentation", ja: "市場環境が根本から変化したという認識を持つことが極めて重要です。", en: "It is crucial to understand that market conditions have fundamentally shifted." },
+    { category: "Presentation", ja: "特許出願を適切に完了させることの重要性は、どれほど強調してもしすぎることはありません。", en: "I cannot overstate the importance of getting the patent filing right." },
+    { category: "Presentation", ja: "要点は単純です。競合が追いついてくる前に行動を起こさなければなりません。", en: "The bottom line is simple: we must act before our competitors catch up." },
+    { category: "Presentation", ja: "誤解を恐れずに言えば、本取り組みは当社の長期的存続に不可欠です。", en: "Make no mistake, this initiative is essential to our long-term survival." },
+    { category: "Presentation", ja: "何よりもまず、法令遵守の維持は譲れない必須条件です。", en: "Above all, maintaining regulatory compliance remains our non-negotiable standard." },
+    { category: "Presentation", ja: "根本的な問題は、社内コミュニケーション網が分断されている点にあります。", en: "The core problem lies in our fragmented communication channels." },
+    { category: "Presentation", ja: "試行期間中に3つの主要なボトルネックを特定いたしました。", en: "We identified three major bottlenecks during the trial period." },
+    { category: "Presentation", ja: "この根深い課題に対処するため、当社は自動化パイプラインを開発しました。", en: "To tackle this persistent issue, we developed an automated pipeline." },
+    { category: "Presentation", ja: "このアプローチにより、顧客導入時の遅延を直接的に是正できます。", en: "This approach directly remedies the delays in customer onboarding." },
+    { category: "Presentation", ja: "何ら手を打たなければ、保守管理費は上昇し続けることになります。", en: "Without intervention, maintenance expenses will continue to climb." },
+    { category: "Presentation", ja: "当社の提案は「スピード」と「精度」という二律背反の課題を同時に解決します。", en: "Our proposal solves the dual challenge of speed and accuracy." },
+    { category: "Presentation", ja: "この手法を用いることで、為替変動リスクを効果的に軽減できます。", en: "This methodology effectively mitigates our foreign exchange exposure." },
+    { category: "Presentation", ja: "真のジレンマは、技術革新と法規制遵守のバランスをいかに取るかでした。", en: "The real dilemma was balancing innovation against compliance." },
+    { category: "Presentation", ja: "現地の専門ベンダーと提携することで、この障壁を克服いたしました。", en: "We addressed this hurdle by partnering with a specialized regional vendor." },
+    { category: "Presentation", ja: "これらの中間プロセスを排除することで、納期を大幅に短縮できます。", en: "By removing these intermediate layers, we significantly streamline delivery." },
+    { category: "Presentation", ja: "以上をもちまして、私の発表内容を終了とさせていただきます。", en: "That brings me to the end of my presentation." },
+    { category: "Presentation", ja: "要約しますと、当社は3つの確実な成長要因を特定いたしました。", en: "To sum up, we have identified three tangible growth drivers." },
+    { category: "Presentation", ja: "手短に申し上げますと、自動化への投資は即座にリターンをもたらします。", en: "In short, investing in automation will yield immediate returns." },
+    { category: "Presentation", ja: "本日お話しした主要なポイントを手短に振り返らせてください。", en: "Let me quickly recap the primary points covered today." },
+    { category: "Presentation", ja: "ご覧いただきました通り、現在のやり方はもはや持続可能ではありません。", en: "As we have seen, the current methodology is no longer sustainable." },
+    { category: "Presentation", ja: "結論として、提案している事業拡張は許容可能なリスクの範囲内です。", en: "In conclusion, the proposed expansion represents an acceptable risk." },
+    { category: "Presentation", ja: "全てのデータが、消費者の購買行動に劇的な変化が起きていることを示唆しています。", en: "All evidence points toward significant shifts in consumer buying habits." },
+    { category: "Presentation", ja: "この概要説明により、今後の実行ロードマップを明確に掴んでいただけたなら幸いです。", en: "I hope this overview provided you with a clear roadmap for execution." },
+    { category: "Presentation", ja: "当社には技術力と市場機会の双方がすでに揃っています。", en: "We possess both the technical capability and the market opportunity." },
+    { category: "Presentation", ja: "本日はご清聴いただき、誠にありがとうございました。", en: "Thank you very much for your kind attention and time today." },
+    { category: "Presentation", ja: "これらの検証結果を踏まえ、ハイブリッドモデルの採用を推奨いたします。", en: "Based on these findings, we recommend adopting the hybrid model." },
+    { category: "Presentation", ja: "直近のネクストステップとして、今月末までにフェーズ1を始動させます。", en: "Our immediate next step is to initiate phase one by the end of this month." },
+    { category: "Presentation", ja: "取締役会におかれましては、必要な設備投資をご承認いただけますようお願いいたします。", en: "We urge the board to approve the necessary capital expenditure." },
+    { category: "Presentation", ja: "各事業部におかれましては、本方針に沿って業務フローの見直しをお願いいたします。", en: "I encourage each business unit to review their workflows accordingly." },
+    { category: "Presentation", ja: "この画期的なサービスの展開にあたり、皆様との強固なパートナーシップを期待しております。", en: "We welcome your partnership as we roll out this groundbreaking service." },
+    { category: "Presentation", ja: "この絶好の市場機会を逃すことなく、迅速に掴み取りましょう。", en: "Let's seize this prime market window before it closes." },
+    { category: "Presentation", ja: "余剰資金の10%を研究開発費に再配分することを推奨いたします。", en: "We recommend allocating ten percent of the surplus to research." },
+    { category: "Presentation", ja: "次段階に進むため、運営委員会からの正式な承認を必要としております。", en: "To proceed, we require formal sign-off from the steering committee." },
+    { category: "Presentation", ja: "技術的な詳細につきましては、当社の総合ホワイトペーパーをご高覧ください。", en: "I invite you to review our comprehensive white paper for technical details." },
+    { category: "Presentation", ja: "当社との概念実証（PoC）の実施をご希望の場合は、ぜひお声がけください。", en: "Let us know if you would like to run a proof of concept with us." },
+    { category: "Presentation", ja: "質疑応答の時間を約10分設けております。どなたから始められますか？", en: "We now have roughly ten minutes for questions. Who would like to start?" },
+    { category: "Presentation", ja: "ご質問ありがとうございます。大変鋭いご指摘です。", en: "Thank you for asking that; that is a very thoughtful question." },
+    { category: "Presentation", ja: "ご質問の趣旨を確認させてください。導入コストについてお尋ねでしょうか？", en: "If I understand your question correctly, you are asking about integration costs?" },
+    { category: "Presentation", ja: "その点につき明確にさせてください。ライセンス費用には継続サポートが含まれています。", en: "Let me clarify that point: our license fee includes ongoing support." },
+    { category: "Presentation", ja: "重要な論点ですが、あいにく現行の検証スコープ外となっております。", en: "That is an important topic, but it lies outside our current test scope." },
+    { category: "Presentation", ja: "あいにく手元に正確な数値がございませんので、後ほどメールで回答させていただきます。", en: "I don’t have those precise figures on hand, but I will follow up via email." },
+    { category: "Presentation", ja: "ご懸念にお答えしますと、当社のテストでは予期せぬ稼働停止はゼロでした。", en: "To answer your concern, our tests revealed zero unplanned downtime." },
+    { category: "Presentation", ja: "的確にお答えしたいため、質問を別の言葉で言い直していただけますか？", en: "Could you rephrase your question? I want to be certain I address it properly." },
+    { category: "Presentation", ja: "以上でご質問への十分な回答になっておりますでしょうか。補足が必要でしょうか？", en: "Does that adequately answer your question, or should I clarify further?" },
+    { category: "Presentation", ja: "お時間となりましたので、残りのご質問はご遠慮なくメールでお寄せください。", en: "Since we have run out of time, please feel free to email me any remaining questions." }
+  ];
+`;
+
+const state = {
+  all: [],      // 全データ
+  queue: [],    // 再生順
+  idx: 0,       // 現在位置
+  playing: false,
+  pass: 0,      // 同じ文を何回目か
+  timer: null
+};
+
+const $ = id => document.getElementById(id);
+const speechOK = 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+
+// ---------- データ解析 ----------
+function parsePhrases(text) {
+  const out = [];
+  const re = /ja:\s*"((?:[^"\\]|\\.)*)"\s*,\s*en:\s*"((?:[^"\\]|\\.)*)"/;
+  for (const line of text.split(/\r?\n/)) {
+    const m = line.match(re);
+    if (!m) continue;
+    const c = line.match(/category:\s*"([^"]+)"/);
+    out.push({ cat: c ? c[1] : "", ja: m[1], en: m[2] });
+  }
+  return out;
+}
+
+// ---------- キュー作成 ----------
+function buildQueue(keepCurrent = false) {
+  const cat = $("category").value;
+  let list = state.all.filter(p => !cat || p.cat === cat);
+  if ($("shuffle").checked) {
+    for (let i = list.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [list[i], list[j]] = [list[j], list[i]];
+    }
+  }
+  const current = keepCurrent && state.queue[state.idx];
+  state.queue = list;
+  state.idx = current ? Math.max(0, list.indexOf(current)) : 0;
+  state.pass = 0;
+  render();
+}
+
+// ---------- 表示 ----------
+function render() {
+  const n = state.queue.length;
+  if (!n) {
+    $("ja").textContent = "表示できるフレーズがありません";
+    $("en").textContent = "";
+    $("counter").textContent = "0 / 0";
+    $("catLabel").textContent = "";
+    $("progress").style.width = "0";
+    return;
+  }
+  const p = state.queue[state.idx];
+  $("ja").textContent = p.ja;
+  $("en").textContent = p.en;
+  $("en").classList.toggle("hidden", !$("showEn").checked);
+  $("counter").textContent = `${state.idx + 1} / ${n}`;
+  $("catLabel").textContent = p.cat;
+  $("progress").style.width = `${((state.idx + 1) / n) * 100}%`;
+}
+
+function setStatus(msg, ok = false) {
+  const el = $("status");
+  el.textContent = msg;
+  el.classList.toggle("ok", ok);
+}
+
+// ---------- 音声 ----------
+function speak(text, onEnd) {
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US";
+  u.rate = parseFloat($("rate").value);
+  u.onend = onEnd;
+  u.onerror = e => { if (e.error !== "interrupted" && e.error !== "canceled") setStatus("音声を再生できませんでした: " + e.error); };
+  speechSynthesis.speak(u);
+}
+
+function updatePlayButton() {
+  $("play").textContent = state.playing ? "⏸ 一時停止" : "▶ 再生";
+}
+
+// 1文ぶんの処理：読み上げ → 間（自分で繰り返す時間）→ 次
+function step() {
+  if (!state.playing) return;
+  render();
+  const p = state.queue[state.idx];
+  if (!p) return stop();
+  const reps = parseInt($("repeat").value, 10);
+  const gapMs = parseInt($("gap").value, 10) * 1000;
+
+  if (!speechOK) {
+    setStatus("このブラウザは音声読み上げに対応していません。");
+    return stop();
+  }
+
+  speak(p.en, () => {
+    if (!state.playing) return;
+    state.timer = setTimeout(() => {
+      if (!state.playing) return;
+      state.pass++;
+      if (state.pass < reps) return step();   // 同じ文をもう一度
+      state.pass = 0;
+      advance(1);
+    }, gapMs);
+  });
+}
+
+function advance(dir) {
+  const n = state.queue.length;
+  let next = state.idx + dir;
+  if (next >= n) {
+    if ($("loop").checked) next = 0;
+    else { state.idx = n - 1; return stop(); }
+  }
+  if (next < 0) next = 0;
+  state.idx = next;
+  state.pass = 0;
+  if (state.playing) step(); else render();
+}
+
+function play() {
+  if (!state.queue.length) return;
+  state.playing = true;
+  updatePlayButton();
+  setStatus("再生中：英文を聞いて、間に声に出して繰り返しましょう", true);
+  step();
+}
+
+function stop() {
+  state.playing = false;
+  clearTimeout(state.timer);
+  if (speechOK) speechSynthesis.cancel();
+  updatePlayButton();
+  if ($("status").textContent.startsWith("再生中")) setStatus("一時停止中");
+}
+
+function togglePlay() { state.playing ? stop() : play(); }
+
+function jump(dir) {
+  const wasPlaying = state.playing;
+  clearTimeout(state.timer);
+  if (speechOK) speechSynthesis.cancel();
+  state.playing = false;
+  state.idx = Math.max(0, Math.min(state.queue.length - 1, state.idx + dir));
+  state.pass = 0;
+  render();
+  if (wasPlaying) play(); else updatePlayButton();
+}
+
+// ---------- イベント ----------
+$("play").onclick = togglePlay;
+$("prev").onclick = () => jump(-1);
+$("next").onclick = () => jump(1);
+$("en").onclick = () => $("en").classList.toggle("hidden");
+$("showEn").onchange = e => $("en").classList.toggle("hidden", !e.target.checked);
+$("category").onchange = () => { stop(); buildQueue(); };
+$("shuffle").onchange = () => { stop(); buildQueue(true); };
+$("loop").onchange = () => {};
+$("rate").oninput = e => $("rateVal").textContent = parseFloat(e.target.value).toFixed(1);
+$("gap").oninput = e => $("gapVal").textContent = e.target.value;
+$("repeat").oninput = e => $("repVal").textContent = e.target.value;
+$("rate").onchange = () => { if (state.playing) { stop(); play(); } };
+
+$("load").onclick = () => {
+  const parsed = parsePhrases($("input").value);
+  if (!parsed.length) {
+    $("loadMsg").textContent = "読み取れる行がありませんでした。形式を確認してください。";
+    return;
+  }
+  stop();
+  state.all = parsed;
+  buildQueue();
+  $("loadMsg").textContent = `${parsed.length} 件を読み込みました`;
+  $("loadMsg").className = "status ok";
+};
+$("reset").onclick = () => {
+  stop();
+  state.all = parsePhrases(SAMPLE);
+  buildQueue();
+  $("loadMsg").textContent = "サンプルに戻しました";
+};
+
+document.addEventListener("keydown", e => {
+  if (e.target.matches("input, textarea, select")) return;
+  if (e.code === "Space") { e.preventDefault(); togglePlay(); }
+  else if (e.code === "ArrowRight") jump(1);
+  else if (e.code === "ArrowLeft") jump(-1);
+});
+
+// ---------- 初期化 ----------
+state.all = parsePhrases(SAMPLE);
+buildQueue();
+if (!speechOK) setStatus("このブラウザは音声読み上げに対応していません。");
+</script>
+</body>
+</html>
