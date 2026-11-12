@@ -79,6 +79,7 @@ details summary { cursor: pointer; color: var(--muted); font-size: .9rem; }
       <button id="next" aria-label="次へ">⏭</button>
     </div>
     <div class="status" id="status"></div>
+    <div class="actions" style="justify-content:center"><button id="test" class="small">🔊 音声テスト</button></div>
   </div>
 
   <div class="card">
@@ -538,6 +539,20 @@ $("rate").oninput = e => $("rateVal").textContent = parseFloat(e.target.value).t
 $("gap").oninput = e => $("gapVal").textContent = e.target.value;
 $("repeat").oninput = e => $("repVal").textContent = e.target.value;
 $("rate").onchange = () => { if (state.playing) { stop(); play(); } };
+
+$("test").onclick = () => {
+  if (!speechOK) return setStatus("このブラウザは音声読み上げに対応していません（speechSynthesis なし）");
+  const n = speechSynthesis.getVoices().length;
+  const u = new SpeechSynthesisUtterance("Thank you all for taking the time to join today.");
+  u.lang = "en-US";
+  u.onstart = () => setStatus(`テスト：発話開始（音声数 ${n}）`, true);
+  u.onend = () => setStatus(`テスト：発話終了（音声数 ${n}）`, true);
+  u.onerror = e => setStatus(`テストエラー：${e.error}（音声数 ${n}）`);
+  speechSynthesis.speak(u);
+  setTimeout(() => {
+    if (!speechSynthesis.speaking) setStatus(`テスト：発話されませんでした（音声数 ${n}）`);
+  }, 1500);
+};
 
 $("load").onclick = () => {
   const parsed = parsePhrases($("input").value);
