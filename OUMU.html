@@ -1,0 +1,2767 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>OUMU AI | 英語オウム返し＆AI発音添削（パロディ）</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & Noto Sans JP -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            tealMain: '#00A896',
+            tealDark: '#008778',
+            tealLight: '#E0F7F4',
+            bgGray: '#F4F7F9',
+            accentYellow: '#FFD166',
+            actionBlue: '#1E88E5',
+            actionBlueDark: '#1565C0',
+            goodGreen: '#00A896',
+            goodBg: '#E6F7F5',
+            devCoral: '#FF5A5F',
+            devBg: '#FFF1F1',
+          },
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans JP', 'sans-serif'],
+          },
+          boxShadow: {
+            card: '0 4px 20px -2px rgba(15, 23, 42, 0.06)',
+            soft: '0 2px 10px rgba(0, 168, 150, 0.14)',
+            cta: '0 6px 18px -3px rgba(30, 136, 229, 0.4)',
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', 'Noto Sans JP', sans-serif;
+      background-color: #F4F7F9;
+      color: #1E293B;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* カスタムスクロールバー */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+
+    /* シャドーイング用スクリプトぼかし効果 */
+    .script-blur {
+      filter: blur(6px);
+      user-select: none;
+      transition: filter 0.25s ease;
+    }
+    .script-blur:hover {
+      filter: blur(2px);
+    }
+
+    /* ティール背景の波形SVGパターン */
+    .teal-wave-bg {
+      background: linear-gradient(135deg, #00C4D0 0%, #00A6B2 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 録音パルスアニメーション */
+    @keyframes pulseRing {
+      0% { transform: scale(0.95); opacity: 0.7; }
+      70% { transform: scale(1.25); opacity: 0; }
+      100% { transform: scale(1.25); opacity: 0; }
+    }
+    .recording-pulse::before {
+      content: '';
+      position: absolute;
+      inset: -6px;
+      border-radius: 9999px;
+      background-color: #FF5A5F;
+      z-index: 0;
+      animation: pulseRing 1.5s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+    }
+
+    /* スムーズなタブ遷移 */
+    .tab-pane {
+      animation: fadeIn 0.22s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col pb-24 md:pb-10">
+
+  <!-- トースト通知コンテナ (alert()の代替) -->
+  <div id="toast-container" class="fixed top-4 right-4 left-4 md:left-auto md:w-96 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- モーダルダイアログ (confirm()等の代替) -->
+  <div id="custom-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl transform transition-all">
+      <div class="flex items-center gap-3 mb-3">
+        <div id="modal-icon-wrap" class="w-10 h-10 rounded-full bg-tealLight text-tealMain flex items-center justify-center shrink-0">
+          <i data-lucide="sparkles" class="w-5 h-5"></i>
+        </div>
+        <h3 id="modal-title" class="text-lg font-bold text-slate-800">お知らせ</h3>
+      </div>
+      <p id="modal-body" class="text-sm text-slate-600 leading-relaxed mb-6"></p>
+      <div class="flex justify-end gap-2">
+        <button id="modal-cancel-btn" class="hidden px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition">キャンセル</button>
+        <button id="modal-confirm-btn" class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-tealMain hover:bg-tealDark transition">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- トップヘッダーナビゲーション -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-2xs">
+    <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+      <!-- ブランドロゴ -->
+      <button onclick="switchTab('home')" class="flex items-center gap-2.5 group focus:outline-none">
+        <div class="w-9 h-9 rounded-xl bg-tealLight flex items-center justify-center text-tealMain group-hover:scale-105 transition-transform">
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+            <path d="M8 5.14v13.72a1 1 0 001.5.86l11-6.86a1 1 0 000-1.72l-11-6.86a1 1 0 00-1.5.86z" />
+          </svg>
+        </div>
+        <div class="text-left">
+          <div class="flex items-center gap-1.5">
+            <span class="font-extrabold tracking-tight text-lg text-slate-800">OUMU</span>
+            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-tealMain text-white">AI</span>
+          </div>
+          <p class="text-[10px] text-slate-400 font-medium -mt-0.5 hidden sm:block">ビジネス英語オウム返し＆発音添削</p>
+        </div>
+      </button>
+
+      <!-- PC向け上部タブナビゲーション -->
+      <nav class="hidden md:flex items-center gap-1 bg-slate-100/80 p-1 rounded-2xl">
+        <button data-nav="home" onclick="switchTab('home')" class="nav-btn-desktop px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition">
+          <i data-lucide="home" class="w-4 h-4"></i> ホーム
+        </button>
+        <button data-nav="training" onclick="switchTab('training')" class="nav-btn-desktop px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition">
+          <i data-lucide="headphones" class="w-4 h-4"></i> トレーニング
+        </button>
+        <button data-nav="feedback" onclick="switchTab('feedback')" class="nav-btn-desktop px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition relative">
+          <i data-lucide="clipboard-check" class="w-4 h-4"></i> 添削結果
+          <span id="desktop-feedback-badge" class="hidden w-2 h-2 rounded-full bg-devCoral"></span>
+        </button>
+        <button data-nav="library" onclick="switchTab('library')" class="nav-btn-desktop px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition">
+          <i data-lucide="book-open" class="w-4 h-4"></i> 教材一覧・AI作成
+        </button>
+      </nav>
+
+      <!-- 右側ストリークステータスバッジ -->
+      <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 bg-amber-50 border border-amber-200/80 px-3 py-1.5 rounded-full">
+          <span class="text-sm">🔥</span>
+          <span id="header-streak-count" class="text-xs font-extrabold text-amber-700">2日連続</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- メインコンテンツ領域 -->
+  <main class="flex-1 max-w-4xl w-full mx-auto px-4 pt-5 pb-8">
+
+    <!-- ==========================================
+         1. ホーム画面 (HOME)
+         ========================================== -->
+    <section id="tab-home" class="tab-pane space-y-5">
+      <!-- 学習ストリーク＆週間達成カレンダーカード -->
+      <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-card border border-slate-100">
+        <div class="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-slate-100">
+          <div class="flex items-center gap-3.5">
+            <!-- 円形達成バッジ -->
+            <div class="relative w-14 h-14 rounded-full bg-tealLight border-4 border-tealMain flex flex-col items-center justify-center shrink-0">
+              <span id="home-week-number" class="text-xl font-extrabold text-tealMain leading-none">4</span>
+              <span class="text-[9px] font-bold text-tealDark mt-0.5">WEEK</span>
+            </div>
+            <div>
+              <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-bold mb-1">
+                <span>🏆</span> <span id="home-weeks-streak">3週達成中</span>
+              </div>
+              <h2 class="text-base sm:text-lg font-extrabold text-slate-800">
+                <span id="home-streak-days" class="text-tealMain text-2xl mr-0.5">2</span>日連続学習中！
+              </h2>
+            </div>
+          </div>
+
+          <div class="text-right">
+            <p id="home-date-range" class="text-xs font-semibold text-slate-400">今週の学習記録</p>
+            <p class="text-xs text-slate-500 mt-0.5">目標：毎日1課題のシャドーイング提出</p>
+          </div>
+        </div>
+
+        <!-- 月〜日の週間達成カレンダー -->
+        <div class="pt-4">
+          <div id="weekly-calendar-grid" class="grid grid-cols-7 gap-2 text-center">
+            <!-- JSで動的生成 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 今日の課題カード (パロディUI) -->
+      <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-card border border-slate-100">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-tealMain"></span>
+            <span class="text-xs font-bold uppercase tracking-wider text-tealMain">TODAY'S ASSIGNMENT</span>
+          </div>
+          <span id="home-today-status" class="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600">未提出</span>
+        </div>
+
+        <h1 id="home-lesson-title" class="text-xl sm:text-2xl font-extrabold text-slate-800 mb-3">Grit：成功の鍵はIQではない</h1>
+
+        <!-- サムネイル風ビジュアルバナー -->
+        <div class="teal-wave-bg rounded-2xl p-5 sm:p-6 text-white mb-4 shadow-soft">
+          <!-- 装飾用波形SVG -->
+          <svg class="absolute right-0 bottom-0 w-64 h-32 opacity-20 pointer-events-none" viewBox="0 0 200 100" fill="none">
+            <path d="M0 50 Q 25 10, 50 50 T 100 50 T 150 50 T 200 50" stroke="white" stroke-width="3" fill="none" />
+            <path d="M0 65 Q 25 25, 50 65 T 100 65 T 150 65 T 200 65" stroke="white" stroke-width="2" fill="none" />
+            <path d="M0 35 Q 25 -5, 50 35 T 100 35 T 150 35 T 200 35" stroke="white" stroke-width="2" fill="none" />
+          </svg>
+
+          <div class="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="space-y-2">
+              <div class="flex flex-wrap items-center gap-2">
+                <span id="home-lesson-category" class="px-2.5 py-0.5 rounded-md bg-white/20 backdrop-blur-xs text-xs font-bold">TED・プレゼン</span>
+                <span id="home-lesson-wpm" class="px-2.5 py-0.5 rounded-md bg-accentYellow text-slate-900 text-xs font-extrabold">WPM 170</span>
+                <span id="home-lesson-level" class="px-2.5 py-0.5 rounded-md bg-slate-900/25 text-xs font-semibold">中上級</span>
+              </div>
+              <p id="home-lesson-subtitle" class="text-lg sm:text-xl font-extrabold tracking-tight">心理学が明かす「やり抜く力」の秘密</p>
+              <p class="text-xs text-white/90">ネイティブの自然なリンキングとリダクションを体感しよう</p>
+            </div>
+            <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0 self-start sm:self-center">
+              <i data-lucide="mic-vocal" class="w-7 h-7 text-white"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- 英文プレビュー -->
+        <div class="bg-bgGray rounded-2xl p-4 mb-5 border border-slate-200/60">
+          <p class="text-[11px] font-bold text-slate-400 uppercase mb-1">Script Preview</p>
+          <p id="home-lesson-preview" class="text-sm sm:text-base text-slate-700 font-medium leading-relaxed line-clamp-2">
+            When I was 27 years old, I left a very demanding job in management consulting for a job that was even more demanding: teaching.
+          </p>
+        </div>
+
+        <!-- メインCTAボタン -->
+        <button onclick="startCurrentLesson()" class="w-full py-4 px-6 rounded-full bg-actionBlue hover:bg-actionBlueDark active:scale-[0.99] text-white font-extrabold text-base sm:text-lg shadow-cta flex items-center justify-center gap-2.5 transition">
+          <span>課題1をはじめる</span>
+          <span class="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs">▶</span>
+        </button>
+
+        <!-- 4ステップ進捗インジケーター -->
+        <div class="mt-6 pt-4 border-t border-slate-100">
+          <div class="flex items-center justify-between max-w-md mx-auto relative">
+            <div class="absolute top-3.5 left-6 right-6 h-0.5 bg-slate-200 z-0"></div>
+            <div class="relative z-10 flex flex-col items-center gap-1">
+              <div class="w-7 h-7 rounded-full bg-tealMain text-white text-xs font-bold flex items-center justify-center shadow-xs">1</div>
+              <span class="text-[10px] font-bold text-slate-600">リスニング</span>
+            </div>
+            <div class="relative z-10 flex flex-col items-center gap-1">
+              <div class="w-7 h-7 rounded-full bg-tealLight text-tealDark border border-tealMain/40 text-xs font-bold flex items-center justify-center">2</div>
+              <span class="text-[10px] font-medium text-slate-500">オーバーラップ</span>
+            </div>
+            <div class="relative z-10 flex flex-col items-center gap-1">
+              <div class="w-7 h-7 rounded-full bg-tealLight text-tealDark border border-tealMain/40 text-xs font-bold flex items-center justify-center">3</div>
+              <span class="text-[10px] font-medium text-slate-500">シャドーイング</span>
+            </div>
+            <div class="relative z-10 flex flex-col items-center gap-1">
+              <div class="w-7 h-7 rounded-full bg-tealLight text-tealDark border border-tealMain/40 text-xs font-bold flex items-center justify-center">4</div>
+              <span class="text-[10px] font-medium text-slate-500">録音・AI添削</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 学習サマリー＆最新の添削クイックアクセス -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="bg-white rounded-2xl p-5 shadow-card border border-slate-100 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-bold text-slate-400">累計提出レポート数</p>
+            <p class="text-2xl font-extrabold text-slate-800 mt-1"><span id="home-total-submissions">0</span> <span class="text-sm font-semibold text-slate-500">回</span></p>
+            <p class="text-xs text-tealMain font-semibold mt-1">継続は力なり！順調なペースです</p>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-tealLight text-tealMain flex items-center justify-center">
+            <i data-lucide="award" class="w-6 h-6"></i>
+          </div>
+        </div>
+
+        <button onclick="switchTab('feedback')" class="bg-white hover:bg-slate-50/80 rounded-2xl p-5 shadow-card border border-slate-100 flex items-center justify-between text-left transition group">
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-goodGreen">最新のAI添削レポート</span>
+              <span class="px-1.5 py-0.5 text-[10px] font-bold bg-goodBg text-goodGreen rounded">確認可能</span>
+            </div>
+            <p id="home-latest-feedback-title" class="text-sm font-bold text-slate-800 mt-1.5 line-clamp-1">まだ添削レポートはありません</p>
+            <p class="text-xs text-slate-500 mt-1 flex items-center gap-1 group-hover:text-tealMain transition">
+              <span>Good & 改善ポイントを見る</span>
+              <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            </p>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-goodBg text-goodGreen flex items-center justify-center shrink-0">
+            <i data-lucide="file-check-2" class="w-6 h-6"></i>
+          </div>
+        </button>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         2. トレーニング画面 (TRAINING PLAYER)
+         ========================================== -->
+    <section id="tab-training" class="tab-pane hidden space-y-5">
+      <!-- 教材ヘッダーバー -->
+      <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-card border border-slate-100 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-2 mb-1">
+            <span id="train-category-badge" class="text-[11px] font-bold px-2 py-0.5 rounded bg-tealLight text-tealDark">TED・プレゼン</span>
+            <span id="train-wpm-badge" class="text-[11px] font-extrabold px-2 py-0.5 rounded bg-accentYellow text-slate-900">WPM 170</span>
+          </div>
+          <h2 id="train-lesson-title" class="text-lg sm:text-xl font-extrabold text-slate-800">Grit：成功の鍵はIQではない</h2>
+        </div>
+
+        <button onclick="switchTab('library')" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center gap-1.5 transition">
+          <i data-lucide="repeat" class="w-3.5 h-3.5"></i> 教材を変更
+        </button>
+      </div>
+
+      <!-- 4ステップ学習ガイドタブ -->
+      <div class="bg-white rounded-2xl p-3 shadow-card border border-slate-100">
+        <div class="grid grid-cols-4 gap-1.5 sm:gap-2">
+          <button onclick="setTrainingStep(1)" data-step="1" class="step-btn flex flex-col items-center p-2.5 rounded-xl text-center transition border">
+            <span class="text-[10px] font-extrabold uppercase tracking-wider mb-0.5">STEP 1</span>
+            <span class="text-xs sm:text-sm font-bold">リスニング</span>
+          </button>
+          <button onclick="setTrainingStep(2)" data-step="2" class="step-btn flex flex-col items-center p-2.5 rounded-xl text-center transition border">
+            <span class="text-[10px] font-extrabold uppercase tracking-wider mb-0.5">STEP 2</span>
+            <span class="text-xs sm:text-sm font-bold">オーバーラップ</span>
+          </button>
+          <button onclick="setTrainingStep(3)" data-step="3" class="step-btn flex flex-col items-center p-2.5 rounded-xl text-center transition border">
+            <span class="text-[10px] font-extrabold uppercase tracking-wider mb-0.5">STEP 3</span>
+            <span class="text-xs sm:text-sm font-bold">シャドーイング</span>
+          </button>
+          <button onclick="setTrainingStep(4)" data-step="4" class="step-btn flex flex-col items-center p-2.5 rounded-xl text-center transition border">
+            <span class="text-[10px] font-extrabold uppercase tracking-wider mb-0.5">STEP 4</span>
+            <span class="text-xs sm:text-sm font-bold">録音・AI添削</span>
+          </button>
+        </div>
+
+        <!-- ステップ別ガイドメッセージ -->
+        <div id="step-guide-banner" class="mt-3 px-4 py-3 rounded-xl bg-tealLight/60 border border-tealMain/20 flex items-start gap-3">
+          <div class="w-7 h-7 rounded-lg bg-tealMain text-white flex items-center justify-center shrink-0 mt-0.5">
+            <i data-lucide="info" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <p id="step-guide-title" class="text-xs sm:text-sm font-bold text-tealDark">Step 1: リスニング＆意味理解</p>
+            <p id="step-guide-desc" class="text-xs text-slate-600 mt-0.5 leading-relaxed">
+              まずは音声を聴きながら英文と日本語訳を確認し、ストーリーの流れと単語の意味を完全に理解しましょう。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- スクリプト表示コントロール＆スクリプトカード -->
+      <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-card border border-slate-100 space-y-4">
+        <!-- 表示オプションバー -->
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
+          <!-- スクリプト表示切替 -->
+          <div class="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
+            <button onclick="setScriptVisibility('full')" data-vis="full" class="vis-btn px-2.5 py-1.5 rounded-lg text-xs font-bold transition">英文+和訳</button>
+            <button onclick="setScriptVisibility('en')" data-vis="en" class="vis-btn px-2.5 py-1.5 rounded-lg text-xs font-bold transition">英文のみ</button>
+            <button onclick="setScriptVisibility('blur')" data-vis="blur" class="vis-btn px-2.5 py-1.5 rounded-lg text-xs font-bold transition">ぼかし</button>
+            <button onclick="setScriptVisibility('hide')" data-vis="hide" class="vis-btn px-2.5 py-1.5 rounded-lg text-xs font-bold transition">隠す</button>
+          </div>
+
+          <!-- 音声変化（リンキング等）解説トグル -->
+          <label class="inline-flex items-center gap-2 cursor-pointer select-none bg-amber-50 border border-amber-200/70 px-3 py-1.5 rounded-xl">
+            <input type="checkbox" id="toggle-phonetics" checked onchange="renderTrainingSentences()" class="sr-only peer" />
+            <div class="w-8 h-4 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all relative peer-checked:bg-tealMain"></div>
+            <span class="text-xs font-bold text-slate-700">音声変化ガイド</span>
+          </label>
+        </div>
+
+        <!-- スクリプト文リスト -->
+        <div id="training-sentences-container" class="space-y-3">
+          <!-- JSで各文をレンダリング -->
+        </div>
+
+        <!-- 高機能音声プレイヤーバー -->
+        <div class="pt-4 border-t border-slate-100 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <!-- 再生速度コントロール -->
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-slate-400 mr-1">速度:</span>
+              <div id="speed-buttons" class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                <button onclick="setPlaybackRate(0.7)" data-rate="0.7" class="rate-btn px-2 py-1 rounded-lg text-xs font-bold transition">0.7x</button>
+                <button onclick="setPlaybackRate(0.8)" data-rate="0.8" class="rate-btn px-2 py-1 rounded-lg text-xs font-bold transition">0.8x</button>
+                <button onclick="setPlaybackRate(0.9)" data-rate="0.9" class="rate-btn px-2 py-1 rounded-lg text-xs font-bold transition">0.9x</button>
+                <button onclick="setPlaybackRate(1.0)" data-rate="1" class="rate-btn px-2 py-1 rounded-lg text-xs font-bold transition">1.0x</button>
+                <button onclick="setPlaybackRate(1.1)" data-rate="1.1" class="rate-btn px-2 py-1 rounded-lg text-xs font-bold transition">1.1x</button>
+                <button onclick="setPlaybackRate(1.2)" data-rate="1.2" class="rate-btn px-2 py-1 rounded-lg text-xs font-bold transition">1.2x</button>
+              </div>
+            </div>
+
+            <!-- 1文ループトグル -->
+            <button id="loop-sentence-btn" onclick="toggleSentenceLoop()" class="px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center gap-1.5 transition">
+              <i data-lucide="repeat-1" class="w-4 h-4"></i>
+              <span>選択文ループ: OFF</span>
+            </button>
+          </div>
+
+          <!-- メイン再生ボタン群 -->
+          <div class="flex items-center justify-center gap-3 pt-1">
+            <button onclick="stopAudioPlayback()" class="w-11 h-11 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition" title="停止して最初に戻る">
+              <i data-lucide="square" class="w-4 h-4 fill-current"></i>
+            </button>
+
+            <button id="main-play-btn" onclick="toggleFullPlayback()" class="px-7 py-3.5 rounded-full bg-tealMain hover:bg-tealDark text-white font-extrabold text-sm sm:text-base shadow-soft flex items-center gap-2.5 transition">
+              <i id="main-play-icon" data-lucide="play" class="w-5 h-5 fill-current"></i>
+              <span id="main-play-label">お手本音声を再生</span>
+            </button>
+
+            <button onclick="nextTrainingStep()" class="px-4 py-3 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs sm:text-sm flex items-center gap-1 transition">
+              <span>次のStep</span>
+              <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 録音＆自己チェック・AI添削提出パネル -->
+      <div id="recording-panel" class="bg-white rounded-3xl p-5 sm:p-6 shadow-card border-2 border-tealMain/30 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2.5">
+            <span class="w-9 h-9 rounded-xl bg-devBg text-devCoral flex items-center justify-center shrink-0">
+              <i data-lucide="mic" class="w-5 h-5"></i>
+            </span>
+            <div>
+              <h3 class="text-base font-extrabold text-slate-800">シャドーイング録音＆AI音声添削</h3>
+              <p class="text-xs text-slate-500">あなたの発音を録音して聴き比べ＆Gemini AIに直接聴かせて添削を受けましょう</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span id="recording-status-badge" class="hidden text-[11px] font-extrabold px-2.5 py-1 rounded-full bg-devBg text-devCoral animate-pulse">● REC</span>
+            <span id="recording-timer" class="font-mono text-sm font-extrabold px-3.5 py-1.5 rounded-full bg-slate-100 text-slate-700">00:00</span>
+          </div>
+        </div>
+
+        <!-- マイク権限エラー・非対応環境時の親切な案内＆デモモード切替バナー -->
+        <div id="mic-error-banner" class="hidden rounded-2xl bg-amber-50 border border-amber-300/80 p-4 space-y-3">
+          <div class="flex items-start gap-2.5">
+            <span class="text-lg leading-none mt-0.5">⚠️</span>
+            <div class="space-y-1">
+              <p class="text-xs sm:text-sm font-extrabold text-amber-900">マイクを使用できませんでした</p>
+              <p id="mic-error-detail" class="text-xs text-amber-800 leading-relaxed">
+                ブラウザのマイクアクセス権限がオフになっているか、現在表示中の環境（プレビュー枠など）でマイクが制限されています。設定からマイクを許可するか、下のデモモードでAI添削をお試しください。
+              </p>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 pt-1">
+            <button onclick="activateDemoMode()" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-2xs transition">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+              <span>デモ音声データで添削を試す</span>
+            </button>
+            <button onclick="startRecording()" class="px-3.5 py-2 rounded-xl bg-white hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold transition">
+              マイク再試行
+            </button>
+          </div>
+        </div>
+
+        <!-- リアルタイム音声波形ビジュアライザー Canvas -->
+        <div class="relative bg-slate-900 rounded-2xl p-3 overflow-hidden">
+          <canvas id="waveform-canvas" class="w-full h-20 block rounded-lg"></canvas>
+          <div id="waveform-placeholder" class="absolute inset-0 flex items-center justify-center pointer-events-none px-4 text-center">
+            <span class="text-xs font-medium text-slate-300 flex items-center gap-1.5">
+              <i data-lucide="audio-waveform" class="w-4 h-4 text-tealMain shrink-0"></i>
+              <span>「録音スタート」を押すとリアルタイムの音量レベルと波形が表示されます</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- 録音コントロールボタン -->
+        <div class="flex flex-wrap items-center justify-center gap-3">
+          <button id="record-toggle-btn" onclick="toggleRecording()" class="relative px-7 py-4 rounded-full bg-devCoral hover:bg-red-600 active:scale-[0.98] text-white font-extrabold text-sm sm:text-base shadow-md flex items-center gap-2.5 transition">
+            <span id="record-dot" class="w-3 h-3 rounded-full bg-white relative z-10"></span>
+            <span id="record-btn-label" class="relative z-10">録音スタート</span>
+          </button>
+
+          <button id="record-with-model-btn" onclick="recordWithModelAudio()" class="px-4 py-3.5 rounded-full bg-tealLight hover:bg-tealMain/20 active:scale-[0.98] text-tealDark font-bold text-xs sm:text-sm flex items-center gap-1.5 transition">
+            <i data-lucide="headphones" class="w-4 h-4"></i>
+            <span>お手本再生と同時に録音</span>
+          </button>
+        </div>
+
+        <!-- 🎧 自分の録音音声を聴く専用プレイヤー（録音完了後に即座に表示） -->
+        <div id="my-recording-card" class="hidden rounded-2xl bg-tealLight/50 border-2 border-tealMain/40 p-4 space-y-3 transition-all">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="w-8 h-8 rounded-full bg-tealMain text-white flex items-center justify-center shrink-0">
+                <i data-lucide="headphones" class="w-4 h-4"></i>
+              </span>
+              <div>
+                <p class="text-xs sm:text-sm font-extrabold text-slate-800">🎧 自分の録音音声を聴く</p>
+                <p id="my-recording-meta" class="text-[11px] font-semibold text-tealDark">録音完了・準備OK</p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button id="play-my-recording-btn" onclick="playMyRecording()" class="px-4 py-2 rounded-full bg-tealMain hover:bg-tealDark text-white text-xs font-extrabold flex items-center gap-1.5 shadow-2xs transition">
+                <i id="play-my-icon" data-lucide="play" class="w-3.5 h-3.5 fill-current"></i>
+                <span id="play-my-label">自分の声を再生</span>
+              </button>
+              <button onclick="compareWithModelAudio()" class="px-3.5 py-2 rounded-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 text-xs font-bold flex items-center gap-1.5 transition">
+                <i data-lucide="volume-2" class="w-3.5 h-3.5 text-tealMain"></i>
+                <span>お手本を聴く</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- ネイティブオーディオプレイヤー（シーク・繰り返し再生対応） -->
+          <audio id="my-recording-audio" controls playsinline class="w-full h-10 rounded-xl"></audio>
+        </div>
+
+        <!-- 任意メモ / デモモード発話データ入力欄（折り畳み・補助用） -->
+        <div class="bg-bgGray rounded-2xl p-3.5 border border-slate-200/70 space-y-2">
+          <div class="flex flex-wrap items-center justify-between gap-1">
+            <span class="text-xs font-bold text-slate-600 flex items-center gap-1.5">
+              <i data-lucide="message-square-text" class="w-3.5 h-3.5 text-tealMain"></i>
+              <span>発話メモ / デモモード用テキスト（録音済みなら空欄のまま提出できます）</span>
+            </span>
+            <button onclick="activateDemoMode()" class="text-[11px] font-bold text-actionBlue hover:underline">
+              ※マイク未使用時のデモ発話をセット
+            </button>
+          </div>
+          <textarea id="recognized-speech-text" rows="2" placeholder="マイク録音した音声はそのままAIに送信されます。マイクが使えない環境では右上の「デモ発話をセット」を押してください。" class="w-full bg-white rounded-xl p-2.5 text-xs sm:text-sm text-slate-700 border border-slate-200 focus:outline-none focus:border-tealMain transition"></textarea>
+        </div>
+
+        <!-- AI添削提出アクションエリア -->
+        <div id="post-record-actions" class="pt-1 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <p id="submit-ready-hint" class="text-xs font-semibold text-slate-500 text-center sm:text-left">
+            🎙️ 録音ボタンを押してシャドーイングを録音してください
+          </p>
+
+          <!-- AI添削提出ボタン -->
+          <button id="submit-ai-btn" onclick="submitForAIFeedback()" class="py-4 px-7 rounded-full bg-actionBlue hover:bg-actionBlueDark active:scale-[0.99] text-white font-extrabold text-sm sm:text-base shadow-cta flex items-center justify-center gap-2 transition">
+            <i data-lucide="sparkles" class="w-5 h-5"></i>
+            <span>AIプロコーチに添削提出する</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         3. AI添削フィードバック画面 (FEEDBACK)
+         ========================================== -->
+    <section id="tab-feedback" class="tab-pane hidden space-y-5">
+      <!-- ローディングオーバーレイ（添削生成中） -->
+      <div id="feedback-loading" class="hidden bg-white rounded-3xl p-10 shadow-card border border-slate-100 text-center space-y-4">
+        <div class="w-16 h-16 rounded-full bg-tealLight text-tealMain mx-auto flex items-center justify-center animate-bounce">
+          <i data-lucide="sparkles" class="w-8 h-8"></i>
+        </div>
+        <h3 class="text-lg font-extrabold text-slate-800">AI英語コーチがあなたの発音を精密分析中...</h3>
+        <p class="text-xs sm:text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
+          リンキング（音の連結）、リダクション（音の脱落）、フラッピング、発話スピード（WPM）をチェックし、具体的な改善アドバイスを作成しています。
+        </p>
+        <div class="w-48 h-1.5 bg-slate-100 rounded-full mx-auto overflow-hidden">
+          <div class="h-full bg-tealMain rounded-full animate-pulse w-3/4"></div>
+        </div>
+      </div>
+
+      <!-- スコア推移（週平均） -->
+      <div id="score-trend-section"></div>
+
+      <!-- 提出前の空状態 -->
+      <div id="feedback-empty" class="hidden bg-white rounded-3xl p-8 shadow-card border border-slate-100 text-center space-y-2">
+        <p class="text-base font-extrabold text-slate-800">まだ添削レポートはありません</p>
+        <p class="text-xs text-slate-500">録音してAIプロコーチに添削提出すると、ここにレポートが表示されます。</p>
+      </div>
+
+      <!-- 添削レポート本体 -->
+      <div id="feedback-content" class="space-y-5">
+        <!-- 履歴セレクター＆総合スコアカード -->
+        <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-card border border-slate-100">
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-1 rounded-lg bg-tealMain text-white text-xs font-extrabold">添削完了</span>
+              <span id="fb-date" class="text-xs font-semibold text-slate-400">サンプル添削レポート</span>
+            </div>
+
+            <!-- 過去の添削履歴切り替え -->
+            <select id="fb-history-select" onchange="selectFeedbackHistory(this.value)" class="text-xs font-bold bg-slate-100 text-slate-700 px-3 py-1.5 rounded-xl border-none focus:outline-none">
+              <!-- JSで生成 -->
+            </select>
+          </div>
+
+          <div class="pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 id="fb-lesson-title" class="text-lg sm:text-xl font-extrabold text-slate-800">Grit：成功の鍵はIQではない</h2>
+              <div class="flex flex-wrap items-center gap-3 mt-2">
+                <span class="text-xs font-semibold text-slate-500">目標速度: <strong id="fb-target-wpm" class="text-slate-800">170 WPM</strong></span>
+                <span class="text-slate-300">|</span>
+                <span class="text-xs font-semibold text-slate-500">あなたの発話速度: <strong id="fb-user-wpm" class="text-tealMain">162 WPM</strong></span>
+              </div>
+            </div>
+
+            <!-- 総合スコアバッジ -->
+            <div class="flex items-center gap-3 bg-tealLight/60 px-4 py-3 rounded-2xl border border-tealMain/20 self-start sm:self-center">
+              <div>
+                <p class="text-[10px] font-extrabold text-tealDark uppercase">Shadowing Score</p>
+                <p class="text-2xl font-extrabold text-tealMain leading-none mt-0.5"><span id="fb-score">84</span><span class="text-xs font-bold text-slate-500 ml-0.5">/ 100</span></p>
+              </div>
+              <div class="w-10 h-10 rounded-full bg-tealMain text-white font-extrabold text-sm flex items-center justify-center">
+                A
+              </div>
+            </div>
+          </div>
+
+          <!-- プロコーチ総評コメント -->
+          <div class="mt-4 bg-bgGray rounded-2xl p-4 border border-slate-200/60">
+            <div class="flex items-center gap-2 mb-1.5">
+              <div class="w-6 h-6 rounded-full bg-tealMain text-white flex items-center justify-center text-xs font-bold">AI</div>
+              <span class="text-xs font-extrabold text-slate-700">担当コーチからの総評</span>
+            </div>
+            <p id="fb-summary" class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              全体のスピード感とイントネーションの抑揚がとても良く捉えられています！特に機能語（and や to）の弱形を意識できており、英語らしいリズムが生まれています。さらにネイティブの連結（リンキング）を2箇所意識すると飛躍的に聞き取りやすくなります。
+            </p>
+          </div>
+        </div>
+
+        <!-- 良かった点 (Good Points / ティールグリーン枠) -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-2 px-1">
+            <span class="w-6 h-6 rounded-full bg-goodGreen text-white flex items-center justify-center text-xs font-bold">✓</span>
+            <h3 class="text-base font-extrabold text-slate-800">良かった点（Good Points）</h3>
+          </div>
+          <div id="fb-good-list" class="space-y-3">
+            <!-- JSでGood Pointカードをレンダリング -->
+          </div>
+        </div>
+
+        <!-- 改善ポイント (Development Point / コーラルレッド枠) -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-2 px-1">
+            <span class="w-6 h-6 rounded-full bg-devCoral text-white flex items-center justify-center text-xs font-bold">!</span>
+            <h3 class="text-base font-extrabold text-slate-800">Development Point（優先改善ポイント）</h3>
+          </div>
+          <div id="fb-dev-list" class="space-y-3">
+            <!-- JSでDevelopment Pointカードをレンダリング -->
+          </div>
+        </div>
+
+        <!-- 再チャレンジCTA -->
+        <div class="pt-2">
+          <button onclick="retryFromFeedback()" class="w-full py-4 px-6 rounded-full bg-tealMain hover:bg-tealDark text-white font-extrabold text-sm sm:text-base shadow-soft flex items-center justify-center gap-2 transition">
+            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+            <span>改善ポイントを意識してもう一度シャドーイングする</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         4. 教材一覧＆AIオリジナル教材作成 (LIBRARY)
+         ========================================== -->
+    <section id="tab-library" class="tab-pane hidden space-y-6">
+      <!-- AIオリジナル教材ジェネレーター (Gemini API連携) -->
+      <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-card border-2 border-tealMain/30 space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-2xl bg-tealLight text-tealMain flex items-center justify-center">
+              <i data-lucide="wand-2" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-base sm:text-lg font-extrabold text-slate-800">AIオリジナル教材メーカー</h2>
+                <span class="text-[10px] font-extrabold px-2 py-0.5 rounded bg-accentYellow text-slate-900">Gemini AI</span>
+              </div>
+              <p class="text-xs text-slate-500">業務テーマや英文記事から、目標WPM・音声変化解説付きの専用教材を即座に生成</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 生成モード切替 -->
+        <div class="flex gap-2 bg-slate-100 p-1 rounded-xl w-fit">
+          <button onclick="setGeneratorMode('topic')" id="gen-mode-topic" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-white text-tealDark shadow-2xs transition">テーマから自動作成</button>
+          <button onclick="setGeneratorMode('custom')" id="gen-mode-custom" class="px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 transition">手持ちの英文を教材化</button>
+        </div>
+
+        <div class="space-y-3">
+          <div id="gen-topic-input-wrap">
+            <label class="block text-xs font-bold text-slate-700 mb-1">練習したいビジネステーマ・シチュエーション</label>
+            <input id="gen-topic-input" type="text" placeholder="例：外資系IT企業のプロダクトロードマップ発表、海外顧客との価格交渉..." class="w-full px-4 py-3 rounded-xl bg-bgGray border border-slate-200 text-sm focus:outline-none focus:border-tealMain transition" />
+          </div>
+
+          <div id="gen-custom-input-wrap" class="hidden">
+            <label class="block text-xs font-bold text-slate-700 mb-1">教材化したい英語スクリプト・記事（3〜6文推奨）</label>
+            <textarea id="gen-custom-textarea" rows="3" placeholder="ここに英語の原稿やニュース記事を貼り付けてください..." class="w-full px-4 py-3 rounded-xl bg-bgGray border border-slate-200 text-sm focus:outline-none focus:border-tealMain transition"></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+            <!-- 目標WPMスライダー -->
+            <div class="bg-bgGray p-3.5 rounded-xl border border-slate-200/60">
+              <div class="flex justify-between text-xs font-bold mb-1.5">
+                <span class="text-slate-600">目標スピード (WPM)</span>
+                <span id="gen-wpm-display" class="text-tealMain font-extrabold">150 WPM</span>
+              </div>
+              <input id="gen-wpm-slider" type="range" min="110" max="200" step="5" value="150" oninput="document.getElementById('gen-wpm-display').textContent = this.value + ' WPM'" class="w-full accent-tealMain cursor-pointer" />
+              <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+                <span>110 (基礎)</span>
+                <span>150 (標準ビジネス)</span>
+                <span>200 (ネイティブ高速)</span>
+              </div>
+            </div>
+
+            <!-- 文数・レベル選択 -->
+            <div class="bg-bgGray p-3.5 rounded-xl border border-slate-200/60 flex flex-col justify-between">
+              <label class="text-xs font-bold text-slate-600 mb-1.5">スクリプトの長さ</label>
+              <select id="gen-sentence-count" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 focus:outline-none focus:border-tealMain">
+                <option value="3">3文（サクッと集中・約30秒）</option>
+                <option value="4" selected>4文（標準トレーニング・約45秒）</option>
+                <option value="5">5文（しっかり長文・約60秒）</option>
+              </select>
+            </div>
+          </div>
+
+          <button id="generate-lesson-btn" onclick="generateCustomLesson()" class="w-full py-3.5 px-6 rounded-full bg-tealMain hover:bg-tealDark text-white font-extrabold text-sm shadow-soft flex items-center justify-center gap-2 transition">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+            <span>AIでオリジナル教材を生成して練習する</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- プリセット＆保存済み教材一覧 -->
+      <div class="space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-base sm:text-lg font-extrabold text-slate-800">カリキュラム教材一覧</h3>
+
+          <!-- カテゴリーフィルター -->
+          <div id="library-filters" class="flex flex-wrap gap-1.5">
+            <button onclick="filterLibrary('ALL')" data-cat="ALL" class="lib-filter-btn px-3 py-1.5 rounded-full text-xs font-bold bg-tealMain text-white transition">すべて</button>
+            <button onclick="filterLibrary('TED・プレゼン')" data-cat="TED・プレゼン" class="lib-filter-btn px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-200 transition">TED・プレゼン</button>
+            <button onclick="filterLibrary('ビジネス会議')" data-cat="ビジネス会議" class="lib-filter-btn px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-200 transition">ビジネス会議</button>
+            <button onclick="filterLibrary('グローバル交渉')" data-cat="グローバル交渉" class="lib-filter-btn px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-200 transition">グローバル交渉</button>
+            <button onclick="filterLibrary('技術・サステナビリティ')" data-cat="技術・サステナビリティ" class="lib-filter-btn px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-200 transition">技術討論</button>
+          </div>
+        </div>
+
+        <div id="library-cards-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- JSで教材カードをレンダリング -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- モバイル向け下部固定ナビゲーションバー -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-2 py-1.5 shadow-lg">
+    <div class="grid grid-cols-4 gap-1">
+      <button data-nav="home" onclick="switchTab('home')" class="nav-btn-mobile flex flex-col items-center justify-center py-1.5 rounded-xl transition">
+        <i data-lucide="home" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px] font-bold">ホーム</span>
+      </button>
+      <button data-nav="training" onclick="switchTab('training')" class="nav-btn-mobile flex flex-col items-center justify-center py-1.5 rounded-xl transition">
+        <i data-lucide="headphones" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px] font-bold">トレーニング</span>
+      </button>
+      <button data-nav="feedback" onclick="switchTab('feedback')" class="nav-btn-mobile flex flex-col items-center justify-center py-1.5 rounded-xl transition relative">
+        <i data-lucide="clipboard-check" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px] font-bold">添削結果</span>
+        <span id="mobile-feedback-badge" class="hidden absolute top-1.5 right-6 w-2 h-2 rounded-full bg-devCoral"></span>
+      </button>
+      <button data-nav="library" onclick="switchTab('library')" class="nav-btn-mobile flex flex-col items-center justify-center py-1.5 rounded-xl transition">
+        <i data-lucide="book-open" class="w-5 h-5 mb-0.5"></i>
+        <span class="text-[10px] font-bold">教材一覧</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ==========================================
+       JavaScript アプリケーションロジック
+       ========================================== -->
+  <script>
+    // Gemini API 設定（ランタイムで自動提供されるため空文字のまま保持）
+    const apiKey = "";
+    // Googleスプレッドシート連携（Apps Scriptのウェブアプリ URL。設定方法は apps_script_setup.gs を参照）
+    const SHEET_ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbxlUh7ZNyCE0PpZ3wY1KsBL3YkYI0zTPGbpamRogSFI9IFbvk-85mdh-eV4vV2hPLKlEw/exec";
+    const GEMINI_AUDIO_MODEL = "gemini-2.5-flash";
+    const GEMINI_MODEL = "gemini-3-flash-preview";
+
+    // ==========================================
+    // 1. プリセット教材データベース（WPM 125〜185）
+    // ==========================================
+    const PRESET_LESSONS = [
+      {
+        id: 'lesson-grit',
+        title: 'Grit：成功の鍵はIQではない',
+        subtitle: '心理学が明かす「やり抜く力」の秘密',
+        category: 'TED・プレゼン',
+        wpm: 170,
+        level: '中上級',
+        sentences: [
+          {
+            en: "When I was 27 years old, I left a very demanding job in management consulting for a job that was even more demanding: teaching.",
+            ja: "27歳のとき、私は経営コンサルティングという非常にハードな仕事を辞め、さらに過酷な「教職」という仕事に就きました。",
+            phonetics: [
+              { target: "When I", pronunciation: "[ウェナイ]", type: "リンキング", tip: "n と I がつながり「ウェナイ」のように発音されます" },
+              { target: "left a", pronunciation: "[レフタ]", type: "リンキング", tip: "t と a が連結して「レフタ」と滑らかにつながります" }
+            ]
+          },
+          {
+            en: "I went to teach seventh graders math in the New York City public schools, and like any teacher, I made quizzes and tests.",
+            ja: "ニューヨーク市の公立学校で中学1年生に数学を教えるようになり、他の先生と同じように小テストや試験を作りました。",
+            phonetics: [
+              { target: "went to", pronunciation: "[ウェントゥ]", type: "同化・短縮", tip: "t が重なり1つの音として短く発音されます" },
+              { target: "and like", pronunciation: "[ンライク]", type: "リダクション", tip: "and の d が脱落し弱形の [ン] になります" }
+            ]
+          },
+          {
+            en: "What struck me was that IQ was not the only difference between my best and my worst students.",
+            ja: "そこで私が衝撃を受けたのは、成績が最も良い生徒と悪い生徒の違いはIQだけではないということでした。",
+            phonetics: [
+              { target: "struck me", pronunciation: "[ストラックミー]", type: "破裂音抑制", tip: "k の息を止め、次の m にすぐ移ります" },
+              { target: "not the", pronunciation: "[ノッザ]", type: "連結", tip: "t を強く弾かず舌を歯の裏に当てて the に繋げます" }
+            ]
+          },
+          {
+            en: "In education, the one thing we know how to measure best is IQ, yet what if doing well in school and in life depends on much more than your ability to learn quickly?",
+            ja: "教育現場で最も正確に測れるものはIQですが、学校や人生での成功が「素早く学ぶ能力」以上のものに左右されるとしたらどうでしょうか？",
+            phonetics: [
+              { target: "what if", pronunciation: "[ワリフ]", type: "フラッピング", tip: "母音に挟まれた t がラ行に近い軽い音になります" },
+              { target: "depends on", pronunciation: "[ディペンズォン]", type: "リンキング", tip: "s と on が繋がり「ズォン」と発音されます" }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'lesson-standup',
+        title: '朝のスタンドアップミーティング報告',
+        subtitle: '進捗とブロッカーを簡潔に共有する',
+        category: 'ビジネス会議',
+        wpm: 125,
+        level: '基礎〜中級',
+        sentences: [
+          {
+            en: "Good morning everyone, let's kick off our daily stand-up by reviewing yesterday's progress.",
+            ja: "皆さんおはようございます。昨日の進捗確認からデイリースタンドアップを始めましょう。",
+            phonetics: [
+              { target: "kick off", pronunciation: "[キッコフ]", type: "リンキング", tip: "k と off がつながり「キッコフ」になります" }
+            ]
+          },
+          {
+            en: "I finished integrating the payment API and pushed the updates to our staging environment.",
+            ja: "決済APIの統合作業を完了し、ステージング環境にアップデートを反映しました。",
+            phonetics: [
+              { target: "finished integrating", pronunciation: "[フィニッシュティンティグレイティング]", type: "リンキング", tip: "ed の [t] と次の i が連結します" }
+            ]
+          },
+          {
+            en: "Today, I plan to run end-to-end tests with the QA team before the afternoon release.",
+            ja: "本日は午後のリリース前に、QAチームと一緒にエンドツーエンドのテストを実施する予定です。",
+            phonetics: [
+              { target: "plan to", pronunciation: "[プラントゥ]", type: "弱形", tip: "to は弱く短く [トゥ] と発音します" }
+            ]
+          },
+          {
+            en: "At the moment, I don't have any blockers, so we are right on schedule.",
+            ja: "現時点で業務を妨げる課題はありませんので、完全にスケジュール通り進んでいます。",
+            phonetics: [
+              { target: "At the", pronunciation: "[アッザ]", type: "連結", tip: "t を飲み込み、そのまま the に繋げます" },
+              { target: "right on", pronunciation: "[ライロン]", type: "フラッピング", tip: "t が軽いラ行音になり on と連結します" }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'lesson-strategy',
+        title: 'プロダクト戦略と顧客インサイト',
+        subtitle: 'データに基づく優先順位の意思決定',
+        category: 'ビジネス会議',
+        wpm: 150,
+        level: '中級',
+        sentences: [
+          {
+            en: "Looking at the latest user retention data, we noticed a significant drop-off during the onboarding flow.",
+            ja: "最新のユーザー継続率データを見ると、オンボーディングの過程で大きな離脱が起きていることに気づきました。",
+            phonetics: [
+              { target: "Looking at", pronunciation: "[ルッキンガット]", type: "リンキング", tip: "ng と at が滑らかに繋がります" },
+              { target: "drop-off", pronunciation: "[ドロッポフ]", type: "リンキング", tip: "p と off が連結して「ドロッポフ」と発音されます" }
+            ]
+          },
+          {
+            en: "Customers love our core analytics features, but setting up their first dashboard takes too much effort.",
+            ja: "顧客は当社の核となる分析機能を気に入っていますが、最初のダッシュボード設定に手間がかかりすぎています。",
+            phonetics: [
+              { target: "setting up", pronunciation: "[セリンガップ]", type: "フラッピング・連結", tip: "tt がラ行化し、ng と up が連結します" }
+            ]
+          },
+          {
+            en: "Therefore, I propose we prioritize building one-click templates for our upcoming sprint.",
+            ja: "したがって、次のスプリントではワンクリックで使えるテンプレートの構築を最優先にすべきだと提案します。",
+            phonetics: [
+              { target: "for our", pronunciation: "[フォアワ]", type: "リンキング", tip: "r の音を介して our と滑らかに繋がります" }
+            ]
+          },
+          {
+            en: "If we can cut setup time in half, we'll see a substantial boost in paid conversions.",
+            ja: "セットアップ時間を半分に短縮できれば、有料プランへの転換率が大幅に向上するはずです。",
+            phonetics: [
+              { target: "cut setup", pronunciation: "[カッセタップ]", type: "破裂音抑制", tip: "cut の t を破裂させずに次の s に移ります" },
+              { target: "in half", pronunciation: "[インハーフ]", type: "リズム", tip: "half に強いストレスを置いて発音します" }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'lesson-negotiation',
+        title: 'グローバルパートナーとの条件交渉',
+        subtitle: 'Win-Winの契約条件を引き出す英語表現',
+        category: 'グローバル交渉',
+        wpm: 165,
+        level: '中上級',
+        sentences: [
+          {
+            en: "We truly value our long-term partnership and want to make sure this agreement works well for both sides.",
+            ja: "私たちは長期的なパートナーシップを心から重視しており、双方にとって有益な合意にしたいと考えています。",
+            phonetics: [
+              { target: "want to", pronunciation: "[ワナ / ウォントゥ]", type: "リダクション", tip: "会話では t が弱まり滑らかに発音されます" },
+              { target: "works well", pronunciation: "[ワークスウェル]", type: "連結", tip: "s から w へ息を止めずに繋げます" }
+            ]
+          },
+          {
+            en: "While your proposed timeline is quite ambitious, we can commit to it if we adjust the initial scope.",
+            ja: "ご提案いただいたスケジュールはかなり意欲的ですが、初期スコープを調整できればコミット可能です。",
+            phonetics: [
+              { target: "commit to it", pronunciation: "[コミットゥイット]", type: "リンキング", tip: "to と it が連結してリズム良く発音されます" }
+            ]
+          },
+          {
+            en: "Alternatively, if you need the full feature set from day one, we would need an additional three weeks.",
+            ja: "あるいは、初日から全機能セットが必要であれば、さらに3週間の期間をいただく必要があります。",
+            phonetics: [
+              { target: "need an", pronunciation: "[ニーダン]", type: "リンキング", tip: "d と an が連結し「ニーダン」になります" }
+            ]
+          },
+          {
+            en: "Let's walk through both options together and see which approach aligns best with your launch goals.",
+            ja: "両方の選択肢を一緒に確認し、貴社のローンチ目標に最も合致するアプローチを見極めましょう。",
+            phonetics: [
+              { target: "walk through", pronunciation: "[ウォークスルー]", type: "連結", tip: "k の閉鎖から th の摩擦音へ素早く移行します" }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'lesson-ai-sustainability',
+        title: 'AIとサステナビリティの未来予測',
+        subtitle: '高速ネイティブスピードで学ぶ技術討論',
+        category: '技術・サステナビリティ',
+        wpm: 185,
+        level: '上級',
+        sentences: [
+          {
+            en: "As generative AI models scale rapidly, the energy consumption of global data centers has become a critical boardroom topic.",
+            ja: "生成AIモデルが急速に拡大するにつれ、世界のデータセンターのエネルギー消費量は経営会議の重要議題となっています。",
+            phonetics: [
+              { target: "has become a", pronunciation: "[ハズビカマ]", type: "リンキング", tip: "become と a が連結し「ビカマ」と発音されます" }
+            ]
+          },
+          {
+            en: "Interestingly, the very same algorithms driving this demand are also helping grid operators optimize renewable energy distribution.",
+            ja: "興味深いことに、この電力需要を生み出しているのと同じアルゴリズムが、電力網の再生可能エネルギー配分の最適化も助けています。",
+            phonetics: [
+              { target: "are also", pronunciation: "[アーオルソー]", type: "リンキング", tip: "r の音で also とスムーズに連結します" }
+            ]
+          },
+          {
+            en: "By predicting wind and solar output with unprecedented accuracy, AI minimizes reliance on fossil-fuel backup plants.",
+            ja: "風力や太陽光の発電量をかつてない精度で予測することで、AIは化石燃料のバックアップ発電所への依存を最小限に抑えます。",
+            phonetics: [
+              { target: "wind and", pronunciation: "[ウィンデン]", type: "リンキング・弱形", tip: "d と and が繋がり弱く発音されます" },
+              { target: "reliance on", pronunciation: "[リライアンスォン]", type: "リンキング", tip: "ce の [s] と on が連結します" }
+            ]
+          },
+          {
+            en: "The real competitive advantage will belong to companies that embed sustainability directly into their technical architecture.",
+            ja: "真の競争優位性は、サステナビリティを自社の技術アーキテクチャに直接組み込む企業にもたらされるでしょう。",
+            phonetics: [
+              { target: "belong to", pronunciation: "[ビロングトゥ]", type: "弱形", tip: "to は弱形の [トゥ] で軽く繋げます" }
+            ]
+          }
+        ]
+      }
+    ];
+
+    // ==========================================
+    // 2. サンプル添削レポート（初回アクセス時用）
+    // ==========================================
+    const SAMPLE_FEEDBACKS = [
+      {
+        id: 'fb-sample-1',
+        lessonId: 'lesson-grit',
+        lessonTitle: 'Grit：成功の鍵はIQではない',
+        date: 'サンプル添削レポート（AIプロコーチ）',
+        targetWpm: 170,
+        userWpm: 164,
+        score: 86,
+        summary: '全体のスピード感とイントネーションの抑揚がとても良く捉えられています！特に機能語（and や to）の弱形を意識できており、英語らしいリズムが生まれています。さらにネイティブの連結（リンキング）を2箇所意識すると飛躍的にクリアになります。',
+        goodPoints: [
+          {
+            phrase: '...in the New York City public schools, [and like] any teacher...',
+            badgeText: '改善されていました！',
+            comment: 'andの弱形を捉え[ン]のように発音できているいらっしゃいました。機能語を強く読みすぎず、内容語（public schools / teacher）を際立たせる音声変化ポイントクリアです！'
+          },
+          {
+            phrase: 'When I was 27 years old, I [left a] very demanding job...',
+            badgeText: 'ナイスリンキング！',
+            comment: 'leftの語尾の[t]と次の[a]を切らずに[レフタ]と滑らかに連結できています。テンポが遅れずスムーズに次のフレーズへ入れています。'
+          }
+        ],
+        developmentPoints: [
+          {
+            phrase: '...yet [what if] doing well in school and in life...',
+            category: 'フラッピング・連結',
+            phoneticGuide: '[ワリフ] のように音をつなげて発音しましょう',
+            advice: '[ワット・イフ]と単語ごとに区切って発音されている印象でした。アメリカ英語では母音に挟まれたtがラ行に近い軽い音に変化するため、[ワリフ]のように一息でつなげて発音してみましょう。'
+          },
+          {
+            phrase: '...in life [depends on] much more than your ability...',
+            category: 'リンキング（子音＋母音）',
+            phoneticGuide: '[ディペンズォン] のイメージで連結させましょう',
+            advice: 'dependsの語尾の[z]とonの母音が離れ、[ディペンズ・オン]と聞こえていました。子音と母音をつなげた[ディペンズォン]のようなイメージで発音すると、目標のWPM 170でも余裕を持って追いつけます。'
+          }
+        ]
+      }
+    ];
+
+    // ==========================================
+    // 3. アプリケーション状態管理 & localStorage
+    // ==========================================
+    const STORAGE_KEY = 'oumu_ai_app_state_v2';
+
+    let appState = {
+      activeTab: 'home',
+      currentLessonId: 'lesson-grit',
+      customLessons: [],
+      streakDays: 0,
+      weeksStreak: 0,
+      totalSubmissions: 0,
+      // 提出した日付（YYYY-MM-DD）の履歴。連続日数・週間カレンダーはここから計算する
+      submittedDates: [],
+      // 月〜日の完了フラグ (0:月 〜 6:日)：recomputeStreaks() で自動計算
+      weeklyCompleted: [false, false, false, false, false, false, false],
+      todaySubmitted: false,
+      feedbackHistory: [],
+      selectedFeedbackId: null
+    };
+
+    // トレーニングプレイヤー用の一時状態
+    let playerState = {
+      step: 1,
+      scriptVisibility: 'full', // 'full' | 'en' | 'blur' | 'hide'
+      playbackRate: 1.0,
+      isPlaying: false,
+      activeSentenceIndex: 0,
+      loopSingleSentence: false,
+      selectedVoice: null,
+      speechQueueActive: false
+    };
+
+    // 録音用の一時状態（iOS Safari / モバイル完全対応）
+    let recordingState = {
+      isRecording: false,
+      isDemoMode: false,
+      mediaRecorder: null,
+      mediaStream: null,
+      audioChunks: [],
+      recordedBlob: null,
+      recordedBlobUrl: null,
+      recordedMimeType: '',
+      audioContext: null,
+      analyser: null,
+      animationFrameId: null,
+      timerInterval: null,
+      startTime: 0,
+      elapsedSeconds: 0,
+      recorderStopped: null
+    };
+    let isStartingRecording = false;
+
+    // アプリ初期化処理
+    function initApp() {
+      loadState();
+      initSpeechSynthesis();
+      renderAll();
+      if (window.lucide) {
+        lucide.createIcons();
+      }
+    }
+
+    // localStorage から学習状態を読み込み
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          appState = {
+            ...appState,
+            ...parsed,
+            feedbackHistory: Array.isArray(parsed.feedbackHistory) ? parsed.feedbackHistory : [],
+            customLessons: Array.isArray(parsed.customLessons) ? parsed.customLessons : [],
+            submittedDates: Array.isArray(parsed.submittedDates) ? parsed.submittedDates : []
+          };
+          recomputeStreaks();
+        }
+      } catch (e) {
+        console.warn('localStorage load skipped:', e);
+      }
+    }
+
+    // localStorage へ学習状態を保存
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        console.warn('localStorage save skipped:', e);
+      }
+    }
+
+    // 日付キー（端末のローカル時刻の YYYY-MM-DD）
+    function dateKey(d = new Date()) {
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${d.getFullYear()}-${m}-${day}`;
+    }
+
+    function addDays(d, n) {
+      const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      x.setDate(x.getDate() + n);
+      return x;
+    }
+
+    // 月曜始まりの週の月曜日
+    function mondayOf(d) {
+      const off = (d.getDay() + 6) % 7;
+      return addDays(d, -off);
+    }
+
+    // 提出日の履歴から、連続日数・連続週数・今週の完了状況をすべて計算する
+    // ・連続日数：今日提出済みなら今日から、未提出なら昨日から過去へ連続している日数
+    //   （今日はまだ途中なので、未提出でも途切れとはみなさない）
+    // ・連続週数：提出のあった週が月曜始まりで何週連続しているか（今週に無ければ先週から数える）
+    function recomputeStreaks() {
+      const dates = new Set(Array.isArray(appState.submittedDates) ? appState.submittedDates : []);
+      const today = new Date();
+
+      appState.todaySubmitted = dates.has(dateKey(today));
+
+      let cursor = appState.todaySubmitted ? today : addDays(today, -1);
+      let streakDays = 0;
+      while (dates.has(dateKey(cursor))) {
+        streakDays++;
+        cursor = addDays(cursor, -1);
+      }
+      appState.streakDays = streakDays;
+
+      const weekHasSubmission = (monday) => {
+        for (let i = 0; i < 7; i++) {
+          if (dates.has(dateKey(addDays(monday, i)))) return true;
+        }
+        return false;
+      };
+      const thisMonday = mondayOf(today);
+      let weekCursor = weekHasSubmission(thisMonday) ? thisMonday : addDays(thisMonday, -7);
+      let weeks = 0;
+      while (weekHasSubmission(weekCursor)) {
+        weeks++;
+        weekCursor = addDays(weekCursor, -7);
+      }
+      appState.weeksStreak = weeks;
+
+      appState.weeklyCompleted = Array.from({ length: 7 }, (_, i) => dates.has(dateKey(addDays(thisMonday, i))));
+    }
+
+    // 全教材リスト（AI作成教材＋プリセット教材）を取得
+    function getAllLessons() {
+      return [...appState.customLessons, ...PRESET_LESSONS];
+    }
+
+    function getCurrentLesson() {
+      return getAllLessons().find(l => l.id === appState.currentLessonId) || PRESET_LESSONS[0];
+    }
+
+    // ==========================================
+    // 4. タブ切り替え・トースト・モーダル制御
+    // ==========================================
+    function switchTab(tabName) {
+      appState.activeTab = tabName;
+
+      document.querySelectorAll('.tab-pane').forEach(pane => {
+        pane.classList.add('hidden');
+      });
+      const targetPane = document.getElementById(`tab-${tabName}`);
+      if (targetPane) {
+        targetPane.classList.remove('hidden');
+      }
+
+      // デスクトップナビゲーション更新
+      document.querySelectorAll('.nav-btn-desktop').forEach(btn => {
+        const isActive = btn.dataset.nav === tabName;
+        btn.className = isActive
+          ? 'nav-btn-desktop px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 bg-white text-tealDark shadow-2xs transition'
+          : 'nav-btn-desktop px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 text-slate-600 hover:text-slate-900 transition';
+      });
+
+      // モバイルナビゲーション更新
+      document.querySelectorAll('.nav-btn-mobile').forEach(btn => {
+        const isActive = btn.dataset.nav === tabName;
+        btn.className = isActive
+          ? 'nav-btn-mobile flex flex-col items-center justify-center py-1.5 rounded-xl text-tealMain bg-tealLight/60 transition'
+          : 'nav-btn-mobile flex flex-col items-center justify-center py-1.5 rounded-xl text-slate-500 hover:text-slate-800 transition';
+      });
+
+      if (tabName === 'training') {
+        renderTraining();
+      } else if (tabName === 'feedback') {
+        renderFeedback();
+      } else if (tabName === 'library') {
+        renderLibrary();
+      } else if (tabName === 'home') {
+        renderHome();
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      lucide.createIcons();
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+
+      const styles = {
+        info: 'bg-slate-800 text-white border-slate-700',
+        success: 'bg-tealDark text-white border-tealMain',
+        warning: 'bg-amber-600 text-white border-amber-500',
+        error: 'bg-devCoral text-white border-red-400'
+      };
+
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto px-4 py-3 rounded-2xl shadow-lg border text-xs sm:text-sm font-bold flex items-center justify-between gap-3 transition-all duration-300 ${styles[type] || styles.info}`;
+      toast.innerHTML = `<span>${message}</span>`;
+
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-6px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3600);
+    }
+
+    function showCustomModal({ title = 'お知らせ', body = '', showCancel = false, onConfirm = null }) {
+      const modal = document.getElementById('custom-modal');
+      const titleEl = document.getElementById('modal-title');
+      const bodyEl = document.getElementById('modal-body');
+      const cancelBtn = document.getElementById('modal-cancel-btn');
+      const confirmBtn = document.getElementById('modal-confirm-btn');
+
+      titleEl.textContent = title;
+      bodyEl.textContent = body;
+
+      if (showCancel) {
+        cancelBtn.classList.remove('hidden');
+      } else {
+        cancelBtn.classList.add('hidden');
+      }
+
+      const closeModal = () => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      };
+
+      cancelBtn.onclick = closeModal;
+      confirmBtn.onclick = () => {
+        closeModal();
+        if (typeof onConfirm === 'function') onConfirm();
+      };
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      lucide.createIcons();
+    }
+
+    // ==========================================
+    // 5. 全体描画＆ホーム画面レンダリング
+    // ==========================================
+    function renderAll() {
+      recomputeStreaks();
+      document.getElementById('header-streak-count').textContent = `${appState.streakDays}日連続`;
+      renderHome();
+      renderTraining();
+      renderFeedback();
+      renderLibrary();
+      switchTab(appState.activeTab || 'home');
+    }
+
+    function renderHome() {
+      const lesson = getCurrentLesson();
+      const latestFb = appState.feedbackHistory[0];
+
+      document.getElementById('home-week-number').textContent = appState.weeksStreak;
+      document.getElementById('home-weeks-streak').textContent = `${appState.weeksStreak}週連続達成中`;
+      document.getElementById('home-streak-days').textContent = appState.streakDays;
+      document.getElementById('home-total-submissions').textContent = appState.totalSubmissions;
+
+      const statusBadge = document.getElementById('home-today-status');
+      if (appState.todaySubmitted) {
+        statusBadge.textContent = '✓ 本日提出済';
+        statusBadge.className = 'text-xs font-extrabold px-2.5 py-1 rounded-full bg-goodBg text-goodGreen';
+      } else {
+        statusBadge.textContent = '未提出';
+        statusBadge.className = 'text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600';
+      }
+
+      // 週間カレンダー (月〜日)
+      const dayNames = ['月', '火', '水', '木', '金', '土', '日'];
+      const todayJsDay = new Date().getDay();
+      const todayIdx = todayJsDay === 0 ? 6 : todayJsDay - 1;
+
+      const calGrid = document.getElementById('weekly-calendar-grid');
+      calGrid.innerHTML = dayNames.map((day, idx) => {
+        const done = appState.weeklyCompleted[idx];
+        const isToday = idx === todayIdx;
+        return `
+          <div class="flex flex-col items-center gap-1.5">
+            <span class="text-[11px] font-bold ${isToday ? 'text-tealMain' : 'text-slate-400'}">${day}</span>
+            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-xs font-extrabold transition ${
+              done
+                ? 'bg-tealMain text-white shadow-2xs'
+                : isToday
+                ? 'bg-tealLight text-tealDark border-2 border-tealMain border-dashed'
+                : 'bg-slate-100 text-slate-400'
+            }">
+              ${done ? '✓' : day}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // 今日の課題カード
+      document.getElementById('home-lesson-title').textContent = lesson.title;
+      document.getElementById('home-lesson-category').textContent = lesson.category;
+      document.getElementById('home-lesson-wpm').textContent = `WPM ${lesson.wpm}`;
+      document.getElementById('home-lesson-level').textContent = lesson.level;
+      document.getElementById('home-lesson-subtitle').textContent = lesson.subtitle;
+      document.getElementById('home-lesson-preview').textContent = lesson.sentences.map(s => s.en).join(' ');
+
+      document.getElementById('home-latest-feedback-title').textContent = latestFb
+        ? `${latestFb.lessonTitle}（${latestFb.score}点）`
+        : 'まだ添削レポートはありません';
+    }
+
+    function startCurrentLesson() {
+      setTrainingStep(1);
+      switchTab('training');
+    }
+
+    // ==========================================
+    // 6. トレーニング画面＆4ステップ制御
+    // ==========================================
+    const STEP_GUIDES = {
+      1: {
+        title: 'Step 1: リスニング＆意味理解',
+        desc: 'まずは音声を聴きながら英文と日本語訳を確認し、ストーリーの流れと単語の意味・音声変化を把握しましょう。',
+        defaultVis: 'full'
+      },
+      2: {
+        title: 'Step 2: オーバーラッピング（スクリプトを見ながら同時発声）',
+        desc: '英文スクリプトを見ながら、お手本音声とぴったり同じタイミング・同じスピードで声に出して重ねましょう。',
+        defaultVis: 'en'
+      },
+      3: {
+        title: 'Step 3: シャドーイング（影のように0.5秒遅れて発声）',
+        desc: 'スクリプトをぼかすか隠した状態で、聞こえてきた英語の音をそのままマネして影のように発声しましょう。',
+        defaultVis: 'blur'
+      },
+      4: {
+        title: 'Step 4: 本番録音＆AIプロコーチ添削提出',
+        desc: '下の「録音スタート」を押してシャドーイングを録音し、自分の声の聴き比べとAI発音添削を受けましょう！',
+        defaultVis: 'hide'
+      }
+    };
+
+    function setTrainingStep(stepNum) {
+      playerState.step = stepNum;
+      const guide = STEP_GUIDES[stepNum] || STEP_GUIDES[1];
+      playerState.scriptVisibility = guide.defaultVis;
+
+      document.getElementById('step-guide-title').textContent = guide.title;
+      document.getElementById('step-guide-desc').textContent = guide.desc;
+
+      renderTraining();
+
+      if (stepNum === 4) {
+        const recPanel = document.getElementById('recording-panel');
+        if (recPanel) {
+          recPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }
+    }
+
+    function nextTrainingStep() {
+      if (playerState.step < 4) {
+        setTrainingStep(playerState.step + 1);
+      } else {
+        const recPanel = document.getElementById('recording-panel');
+        if (recPanel) {
+          recPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }
+
+    function setScriptVisibility(vis) {
+      playerState.scriptVisibility = vis;
+      renderTraining();
+    }
+
+    function setPlaybackRate(rate) {
+      playerState.playbackRate = Number(rate);
+      renderTraining();
+      if (playerState.isPlaying) {
+        playSentenceSequence(playerState.activeSentenceIndex);
+      }
+    }
+
+    function toggleSentenceLoop() {
+      playerState.loopSingleSentence = !playerState.loopSingleSentence;
+      renderTraining();
+    }
+
+    function renderTraining() {
+      const lesson = getCurrentLesson();
+
+      document.getElementById('train-category-badge').textContent = lesson.category;
+      document.getElementById('train-wpm-badge').textContent = `WPM ${lesson.wpm}`;
+      document.getElementById('train-lesson-title').textContent = lesson.title;
+
+      // ステップボタンのアクティブ状態
+      document.querySelectorAll('.step-btn').forEach(btn => {
+        const s = Number(btn.dataset.step);
+        btn.className = s === playerState.step
+          ? 'step-btn flex flex-col items-center p-2.5 rounded-xl text-center transition border border-tealMain bg-tealLight text-tealDark shadow-2xs'
+          : 'step-btn flex flex-col items-center p-2.5 rounded-xl text-center transition border border-slate-200 bg-white text-slate-500 hover:bg-slate-50';
+      });
+
+      // スクリプト表示ボタンのアクティブ状態
+      document.querySelectorAll('.vis-btn').forEach(btn => {
+        const isVis = btn.dataset.vis === playerState.scriptVisibility;
+        btn.className = isVis
+          ? 'vis-btn px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white text-tealDark shadow-2xs transition'
+          : 'vis-btn px-2.5 py-1.5 rounded-lg text-xs font-bold text-slate-500 hover:text-slate-800 transition';
+      });
+
+      // 再生速度ボタンのアクティブ状態
+      document.querySelectorAll('.rate-btn').forEach(btn => {
+        const isRate = Number(btn.dataset.rate) === playerState.playbackRate;
+        btn.className = isRate
+          ? 'rate-btn px-2 py-1 rounded-lg text-xs font-extrabold bg-tealMain text-white shadow-2xs transition'
+          : 'rate-btn px-2 py-1 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200/70 transition';
+      });
+
+      // ループボタン表示
+      const loopBtn = document.getElementById('loop-sentence-btn');
+      if (playerState.loopSingleSentence) {
+        loopBtn.className = 'px-3 py-1.5 rounded-xl text-xs font-extrabold border border-tealMain bg-tealLight text-tealDark flex items-center gap-1.5 transition';
+        loopBtn.querySelector('span').textContent = '選択文ループ: ON';
+      } else {
+        loopBtn.className = 'px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center gap-1.5 transition';
+        loopBtn.querySelector('span').textContent = '選択文ループ: OFF';
+      }
+
+      renderTrainingSentences();
+    }
+
+    function renderTrainingSentences() {
+      const lesson = getCurrentLesson();
+      const container = document.getElementById('training-sentences-container');
+      const showPhonetics = document.getElementById('toggle-phonetics').checked;
+      const vis = playerState.scriptVisibility;
+
+      container.innerHTML = lesson.sentences.map((s, idx) => {
+        const isActive = idx === playerState.activeSentenceIndex;
+        const blurClass = vis === 'blur' ? 'script-blur' : vis === 'hide' ? 'opacity-0 select-none pointer-events-none' : '';
+
+        const phoneticsHtml = (showPhonetics && vis !== 'hide' && s.phonetics && s.phonetics.length > 0)
+          ? `<div class="mt-2.5 pt-2.5 border-t border-slate-200/70 flex flex-wrap gap-1.5">
+              ${s.phonetics.map(p => `
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200/80 text-[11px]" title="${p.tip}">
+                  <span class="font-extrabold text-amber-900">${p.target}</span>
+                  <span class="font-bold text-tealDark">${p.pronunciation}</span>
+                  <span class="text-[10px] px-1.5 py-0.2 rounded bg-white text-amber-800 font-semibold">${p.type}</span>
+                </div>
+              `).join('')}
+            </div>`
+          : '';
+
+        return `
+          <div onclick="selectSentenceCard(${idx})" class="rounded-2xl p-4 border transition cursor-pointer ${
+            isActive
+              ? 'bg-tealLight/30 border-tealMain shadow-2xs'
+              : 'bg-bgGray/70 border-slate-200/70 hover:border-slate-300'
+          }">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full text-xs font-extrabold flex items-center justify-center shrink-0 ${
+                  isActive ? 'bg-tealMain text-white' : 'bg-slate-200 text-slate-600'
+                }">${idx + 1}</span>
+                ${vis === 'hide' ? '<span class="text-xs font-bold text-slate-400">🎧 音声に集中モード（タップで1文再生）</span>' : ''}
+              </div>
+
+              <button onclick="event.stopPropagation(); playSingleSentence(${idx})" class="px-3 py-1.5 rounded-xl bg-white hover:bg-tealMain text-tealDark hover:text-white border border-slate-200 text-xs font-bold flex items-center gap-1 shrink-0 transition">
+                <i data-lucide="volume-2" class="w-3.5 h-3.5"></i>
+                <span>この文を再生</span>
+              </button>
+            </div>
+
+            <div class="mt-2 ${blurClass}">
+              <p class="text-base sm:text-lg font-bold text-slate-800 leading-relaxed">${s.en}</p>
+              ${vis === 'full' ? `<p class="text-xs sm:text-sm text-slate-500 mt-1.5 leading-relaxed">${s.ja}</p>` : ''}
+            </div>
+
+            ${phoneticsHtml}
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function selectSentenceCard(idx) {
+      playerState.activeSentenceIndex = idx;
+      renderTrainingSentences();
+    }
+
+    // ==========================================
+    // 7. Web Speech API お手本音声プレイヤー
+    // ==========================================
+    function initSpeechSynthesis() {
+      if (!('speechSynthesis' in window)) return;
+
+      const pickVoice = () => {
+        const voices = window.speechSynthesis.getVoices();
+        if (!voices || voices.length === 0) return;
+        playerState.selectedVoice =
+          voices.find(v => v.lang === 'en-US' && (v.name.includes('Samantha') || v.name.includes('Google') || v.name.includes('Natural'))) ||
+          voices.find(v => v.lang === 'en-US') ||
+          voices.find(v => v.lang.startsWith('en')) ||
+          voices[0];
+      };
+
+      pickVoice();
+      window.speechSynthesis.onvoiceschanged = pickVoice;
+    }
+
+    function toggleFullPlayback() {
+      if (playerState.isPlaying) {
+        stopAudioPlayback();
+      } else {
+        playSentenceSequence(playerState.activeSentenceIndex || 0);
+      }
+    }
+
+    function playSingleSentence(index) {
+      playerState.activeSentenceIndex = index;
+      playSentenceSequence(index, !playerState.loopSingleSentence);
+    }
+
+    function playSentenceSequence(startIndex = 0, singleShot = false) {
+      if (!('speechSynthesis' in window)) {
+        showToast('お使いのブラウザは音声読み上げに対応していません', 'warning');
+        return;
+      }
+
+      const lesson = getCurrentLesson();
+      if (!lesson || !lesson.sentences[startIndex]) {
+        stopAudioPlayback();
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+      playerState.isPlaying = true;
+      playerState.speechQueueActive = true;
+      playerState.activeSentenceIndex = startIndex;
+
+      updateMainPlayButton(true);
+      renderTrainingSentences();
+
+      const utterance = new SpeechSynthesisUtterance(lesson.sentences[startIndex].en);
+      utterance.lang = 'en-US';
+      if (playerState.selectedVoice) {
+        utterance.voice = playerState.selectedVoice;
+      }
+      // 教材WPMを基準にした自然な速度補正 × ユーザー設定倍率
+      const wpmFactor = Math.min(1.18, Math.max(0.85, lesson.wpm / 160));
+      utterance.rate = Number((playerState.playbackRate * wpmFactor).toFixed(2));
+
+      utterance.onend = () => {
+        if (!playerState.speechQueueActive) return;
+
+        if (playerState.loopSingleSentence) {
+          setTimeout(() => {
+            if (playerState.speechQueueActive) {
+              playSentenceSequence(startIndex, singleShot);
+            }
+          }, 350);
+        } else if (!singleShot && startIndex + 1 < lesson.sentences.length) {
+          setTimeout(() => {
+            if (playerState.speechQueueActive) {
+              playSentenceSequence(startIndex + 1, false);
+            }
+          }, 250);
+        } else {
+          stopAudioPlayback(false);
+        }
+      };
+
+      utterance.onerror = (e) => {
+        if (e.error !== 'interrupted' && e.error !== 'canceled') {
+          stopAudioPlayback(false);
+        }
+      };
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function stopAudioPlayback(resetIndex = true) {
+      playerState.speechQueueActive = false;
+      playerState.isPlaying = false;
+      if (resetIndex) {
+        playerState.activeSentenceIndex = 0;
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      updateMainPlayButton(false);
+      renderTrainingSentences();
+    }
+
+    function updateMainPlayButton(isPlaying) {
+      const btn = document.getElementById('main-play-btn');
+      const label = document.getElementById('main-play-label');
+      if (!btn || !label) return;
+
+      if (isPlaying) {
+        btn.classList.remove('bg-tealMain', 'hover:bg-tealDark');
+        btn.classList.add('bg-slate-800', 'hover:bg-slate-900');
+        label.textContent = '再生を一時停止';
+      } else {
+        btn.classList.remove('bg-slate-800', 'hover:bg-slate-900');
+        btn.classList.add('bg-tealMain', 'hover:bg-tealDark');
+        label.textContent = 'お手本音声を再生';
+      }
+    }
+
+    function speakPhrase(phrase) {
+      if (!('speechSynthesis' in window)) return;
+      stopAudioPlayback(false);
+
+      const cleanText = phrase.replace(/\.\.\./g, ' ').replace(/[\[\]]/g, '').trim();
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.lang = 'en-US';
+      if (playerState.selectedVoice) {
+        utterance.voice = playerState.selectedVoice;
+      }
+      utterance.rate = 0.92;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // ==========================================
+    // 8. マイク録音＆波形ビジュアライザー（iOS Safari完全対応）
+    // ==========================================
+    function getSupportedAudioMimeType() {
+      if (typeof MediaRecorder === 'undefined') return '';
+      const candidates = [
+        'audio/mp4',
+        'audio/webm;codecs=opus',
+        'audio/webm',
+        'audio/ogg;codecs=opus',
+        'audio/aac'
+      ];
+      for (const type of candidates) {
+        try {
+          if (MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(type)) {
+            return type;
+          }
+        } catch (e) {
+          // 無視して次の候補を確認
+        }
+      }
+      return '';
+    }
+
+    async function toggleRecording() {
+      if (recordingState.isRecording) {
+        stopRecording();
+      } else {
+        await startRecording(false);
+      }
+    }
+
+    async function recordWithModelAudio() {
+      if (recordingState.isRecording) {
+        stopRecording();
+        return;
+      }
+      const started = await startRecording(true);
+      if (started) {
+        // iOS Safariのオーディオセッション切り替え完了後に少し遅らせてお手本再生
+        setTimeout(() => {
+          if (recordingState.isRecording) {
+            playSentenceSequence(0);
+          }
+        }, 350);
+      }
+    }
+
+    async function startRecording(keepModelAudio = false) {
+      // 通常録音時は既存の再生を停止してマイク音声の混入を防ぐ
+      if (!keepModelAudio && playerState.isPlaying) {
+        stopAudioPlayback();
+      }
+
+      if (!window.isSecureContext) {
+        showMicError('マイクはHTTPS（安全な接続）のページでのみ使用できます。ファイルを直接開いている場合やhttp:// のアドレスでは録音できません。HTTPSでホスティングされたURLから開き直してください。');
+        return false;
+      }
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showMicError('お使いのブラウザまたは表示環境はマイク録音（getUserMedia）に対応していません。デモ音声モードでAI添削をお試しいただけます。');
+        return false;
+      }
+
+      // 連打による二重起動を防止（getUserMediaの待機中は isRecording がまだ false のため）
+      if (isStartingRecording || recordingState.isRecording) return false;
+      isStartingRecording = true;
+
+      try {
+        // 1. マイクストリーム取得
+        //    制約によるエラー（OverconstrainedError）のみシンプルな { audio: true } で再試行する。
+        //    権限拒否などでは再試行せず、ブラウザの許可ダイアログを二重に出さない。
+        let stream;
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true
+            }
+          });
+        } catch (constraintErr) {
+          if (constraintErr && constraintErr.name === 'OverconstrainedError') {
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          } else {
+            throw constraintErr;
+          }
+        }
+
+        // エラーバナーを非表示にリセット
+        document.getElementById('mic-error-banner').classList.add('hidden');
+        recordingState.isDemoMode = false;
+        recordingState.mediaStream = stream;
+        recordingState.audioChunks = [];
+
+        // 2. ブラウザ対応MIMEタイプを自動判定してMediaRecorderを初期化（iOS Safari対応）
+        const mimeType = getSupportedAudioMimeType();
+        const recorderOptions = mimeType ? { mimeType } : {};
+        const mediaRecorder = new MediaRecorder(stream, recorderOptions);
+
+        mediaRecorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) {
+            recordingState.audioChunks.push(e.data);
+          }
+        };
+
+        mediaRecorder.onstop = () => {
+          const finalMime = mediaRecorder.mimeType || mimeType || 'audio/mp4';
+          const audioBlob = new Blob(recordingState.audioChunks, { type: finalMime });
+          recordingState.recordedBlob = audioBlob;
+          recordingState.recordedMimeType = finalMime;
+
+          if (recordingState.recordedBlobUrl) {
+            URL.revokeObjectURL(recordingState.recordedBlobUrl);
+          }
+          recordingState.recordedBlobUrl = URL.createObjectURL(audioBlob);
+
+          // 「🎧 自分の録音音声を聴く」プレイヤーにセットして即座に表示
+          const audioEl = document.getElementById('my-recording-audio');
+          audioEl.src = recordingState.recordedBlobUrl;
+          audioEl.load();
+
+          const sizeKb = Math.max(1, Math.round(audioBlob.size / 1024));
+          const durationSec = Math.max(1, recordingState.elapsedSeconds);
+          document.getElementById('my-recording-meta').textContent = `録音時間: ${durationSec}秒 / データサイズ: ${sizeKb} KB（聴き比べ可能）`;
+          document.getElementById('my-recording-card').classList.remove('hidden');
+          document.getElementById('submit-ready-hint').textContent = `✅ ${durationSec}秒の音声が録音されました！下のボタンからAI添削へ提出できます`;
+          document.getElementById('submit-ready-hint').className = 'text-xs font-extrabold text-tealDark text-center sm:text-left';
+
+          // マイクストリームのトラックを解放
+          if (recordingState.mediaStream) {
+            recordingState.mediaStream.getTracks().forEach(track => track.stop());
+            recordingState.mediaStream = null;
+          }
+          lucide.createIcons();
+        };
+
+        // onstop完了を待てるようPromise化（送信時の待機に使用）
+        recordingState.recorderStopped = new Promise(resolve => {
+          mediaRecorder.addEventListener('stop', resolve, { once: true });
+        });
+
+        recordingState.mediaRecorder = mediaRecorder;
+        recordingState.isRecording = true;
+        recordingState.startTime = Date.now();
+        recordingState.elapsedSeconds = 0;
+
+        document.getElementById('waveform-placeholder').classList.add('hidden');
+        document.getElementById('recording-status-badge').classList.remove('hidden');
+        document.getElementById('recording-timer').textContent = '00:00';
+
+        // 250msごとにチャンクを確定させてモバイルでも確実にデータ取得
+        mediaRecorder.start(250);
+
+        // ビジュアライザー用AudioContext（録音本体とは独立。resume()の完了を待たず、失敗しても録音は続行）
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) {
+            const audioCtx = new AudioCtx();
+            if (audioCtx.state === 'suspended') {
+              audioCtx.resume().catch(() => {});
+            }
+            const source = audioCtx.createMediaStreamSource(stream);
+            const analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 128;
+            source.connect(analyser);
+
+            recordingState.audioContext = audioCtx;
+            recordingState.analyser = analyser;
+          }
+        } catch (audioCtxErr) {
+          console.warn('AudioContextビジュアライザー初期化スキップ:', audioCtxErr);
+          recordingState.audioContext = null;
+          recordingState.analyser = null;
+        }
+
+        // タイマー更新
+        recordingState.timerInterval = setInterval(() => {
+          recordingState.elapsedSeconds = Math.floor((Date.now() - recordingState.startTime) / 1000);
+          const mins = String(Math.floor(recordingState.elapsedSeconds / 60)).padStart(2, '0');
+          const secs = String(recordingState.elapsedSeconds % 60).padStart(2, '0');
+          document.getElementById('recording-timer').textContent = `${mins}:${secs}`;
+        }, 250);
+
+        updateRecordingButtonUI(true);
+        // 波形描画は録音の付随機能。失敗しても録音自体は続行する
+        try {
+          drawWaveform();
+        } catch (drawErr) {
+          console.warn('波形描画スキップ:', drawErr);
+        }
+        showToast('🎙️ 録音を開始しました！英文をシャドーイングしてください', 'info');
+        return true;
+      } catch (err) {
+        console.warn('マイク録音エラー:', err);
+        // 途中まで取得したマイクストリームがあれば解放する
+        if (recordingState.mediaStream) {
+          recordingState.mediaStream.getTracks().forEach(track => track.stop());
+          recordingState.mediaStream = null;
+        }
+        let reason = 'ブラウザのマイク権限が拒否されているか、マイクデバイスが見つかりません。';
+        if (err && err.name === 'NotAllowedError' || err && err.name === 'SecurityError') {
+          reason = 'マイクの使用が許可されていません。ブラウザのアドレスバー付近の「マイク許可」をオンにするか、下の「デモ音声データで添削を試す」ボタンをご利用ください。';
+        } else if (err && err.name === 'NotFoundError') {
+          reason = '接続されたマイクが見つかりませんでした。イヤホンマイクを接続するか、下の「デモ音声データで添削を試す」ボタンをお試しください。';
+        } else if (err && err.name === 'NotReadableError') {
+          reason = 'マイクが他のアプリで使用中のため開始できませんでした。他のアプリ（通話・録音アプリなど）を終了してから「マイク再試行」を押してください。';
+        }
+        showMicError(reason);
+        return false;
+      } finally {
+        isStartingRecording = false;
+      }
+    }
+
+    function showMicError(detailText) {
+      const banner = document.getElementById('mic-error-banner');
+      document.getElementById('mic-error-detail').textContent = detailText;
+      banner.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function stopRecording() {
+      if (!recordingState.isRecording) return;
+      recordingState.isRecording = false;
+
+      if (recordingState.mediaRecorder && recordingState.mediaRecorder.state !== 'inactive') {
+        try {
+          recordingState.mediaRecorder.stop();
+        } catch (e) {
+          console.warn('MediaRecorder stop error:', e);
+        }
+      }
+      if (recordingState.timerInterval) {
+        clearInterval(recordingState.timerInterval);
+        recordingState.timerInterval = null;
+      }
+      if (recordingState.animationFrameId) {
+        cancelAnimationFrame(recordingState.animationFrameId);
+        recordingState.animationFrameId = null;
+      }
+      if (recordingState.audioContext) {
+        recordingState.audioContext.close().catch(() => {});
+        recordingState.audioContext = null;
+        recordingState.analyser = null;
+      }
+
+      document.getElementById('recording-status-badge').classList.add('hidden');
+      stopAudioPlayback();
+      updateRecordingButtonUI(false);
+      showToast('⏹ 録音を停止しました！「自分の声を再生」で聴き比べできます', 'success');
+    }
+
+    function updateRecordingButtonUI(isRec) {
+      const btn = document.getElementById('record-toggle-btn');
+      const label = document.getElementById('record-btn-label');
+      if (isRec) {
+        btn.classList.add('recording-pulse');
+        btn.classList.remove('bg-devCoral', 'hover:bg-red-600');
+        btn.classList.add('bg-slate-900', 'hover:bg-slate-800');
+        label.textContent = '録音を停止する';
+      } else {
+        btn.classList.remove('recording-pulse', 'bg-slate-900', 'hover:bg-slate-800');
+        btn.classList.add('bg-devCoral', 'hover:bg-red-600');
+        label.textContent = '録音スタート';
+      }
+    }
+
+    function drawWaveform() {
+      if (!recordingState.isRecording) return;
+
+      const canvas = document.getElementById('waveform-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = canvas.offsetWidth || 300;
+      canvas.height = canvas.offsetHeight || 80;
+
+      let dataArray = null;
+      let bufferLength = 48;
+
+      if (recordingState.analyser) {
+        bufferLength = recordingState.analyser.frequencyBinCount;
+        dataArray = new Uint8Array(bufferLength);
+      }
+
+      let phase = 0;
+      const renderFrame = () => {
+        if (!recordingState.isRecording) return;
+        recordingState.animationFrameId = requestAnimationFrame(renderFrame);
+        phase += 0.15;
+
+        ctx.fillStyle = '#0F172A';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const bars = Math.min(bufferLength, 48);
+        const barWidth = canvas.width / bars;
+
+        if (recordingState.analyser && dataArray) {
+          recordingState.analyser.getByteFrequencyData(dataArray);
+        }
+
+        for (let i = 0; i < bars; i++) {
+          let amplitude = 0.15;
+          if (dataArray) {
+            amplitude = Math.max(0.08, dataArray[i] / 255);
+          } else {
+            // AudioContext制限時でも録音中であることが分かるスムーズなアニメーション波形
+            amplitude = 0.2 + 0.35 * Math.abs(Math.sin(phase + i * 0.35));
+          }
+
+          const barHeight = amplitude * (canvas.height * 0.82);
+          const gradient = ctx.createLinearGradient(0, canvas.height - barHeight, 0, canvas.height);
+          gradient.addColorStop(0, '#00A896');
+          gradient.addColorStop(1, '#FFD166');
+
+          ctx.fillStyle = gradient;
+          const bx = i * barWidth + 1.5;
+          const by = (canvas.height - barHeight) / 2;
+          const bw = Math.max(2, barWidth - 3);
+          const bh = Math.max(4, barHeight);
+          ctx.beginPath();
+          if (typeof ctx.roundRect === 'function') {
+            ctx.roundRect(bx, by, bw, bh, 4);
+          } else {
+            // roundRect非対応の古いSafari向け（iOS 16未満）
+            ctx.rect(bx, by, bw, bh);
+          }
+          ctx.fill();
+        }
+      };
+
+      renderFrame();
+    }
+
+    function playMyRecording() {
+      const audioEl = document.getElementById('my-recording-audio');
+      if (!audioEl.src) {
+        showToast('再生できる録音データがまだありません', 'warning');
+        return;
+      }
+      if (playerState.isPlaying) {
+        stopAudioPlayback();
+      }
+      if (audioEl.paused) {
+        audioEl.play().catch(err => {
+          console.warn('Audio playback error:', err);
+          showToast('音声プレイヤーの再生ボタンを押して再生してください', 'info');
+        });
+        document.getElementById('play-my-label').textContent = '一時停止';
+        audioEl.onended = () => {
+          document.getElementById('play-my-label').textContent = '自分の声を再生';
+        };
+      } else {
+        audioEl.pause();
+        document.getElementById('play-my-label').textContent = '自分の声を再生';
+      }
+    }
+
+    function compareWithModelAudio() {
+      const audioEl = document.getElementById('my-recording-audio');
+      if (audioEl && !audioEl.paused) {
+        audioEl.pause();
+        document.getElementById('play-my-label').textContent = '自分の声を再生';
+      }
+      playSentenceSequence(0);
+    }
+
+    // マイクが使えない環境でもAI添削を試せるデモモード有効化
+    function activateDemoMode() {
+      const lesson = getCurrentLesson();
+      const fullText = lesson.sentences.map(s => s.en).join(' ');
+      const words = fullText.split(' ');
+      const simulated = words
+        .map((w, idx) => (idx % 9 === 4 ? '' : w))
+        .filter(Boolean)
+        .join(' ');
+
+      recordingState.isDemoMode = true;
+      recordingState.recordedBlob = null;
+      recordingState.elapsedSeconds = Math.max(12, Math.round((words.length / lesson.wpm) * 60));
+
+      document.getElementById('recognized-speech-text').value = simulated;
+      document.getElementById('mic-error-banner').classList.add('hidden');
+      document.getElementById('submit-ready-hint').textContent = '✨ デモ発話データがセットされました！そのままAI添削へ提出できます';
+      document.getElementById('submit-ready-hint').className = 'text-xs font-extrabold text-actionBlue text-center sm:text-left';
+
+      showToast('デモ用の発話データをセットしました！下の「AIプロコーチに添削提出する」を押してください', 'success');
+    }
+
+    // BlobをBase64文字列へ変換するヘルパー
+    function blobToBase64(blob) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const dataUrl = reader.result || '';
+          const base64 = String(dataUrl).split(',')[1];
+          if (base64) resolve(base64);
+          else reject(new Error('Base64 conversion failed'));
+        };
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    // ==========================================
+    // 9. Gemini API 連携（音声直接添削＆指数バックオフ付き）
+    // ==========================================
+    async function fetchGeminiWithRetry(payload, modelName = GEMINI_MODEL, maxRetries = 3) {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+      let delay = 1000;
+
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        try {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error ${response.status}`);
+          }
+
+          const data = await response.json();
+          const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (!text) throw new Error('Empty response from Gemini');
+          return JSON.parse(text);
+        } catch (err) {
+          if (attempt === maxRetries) throw err;
+          await new Promise(res => setTimeout(res, delay));
+          delay *= 2;
+        }
+      }
+    }
+
+    // AI発音添削の提出とレポート生成（録音音声データをGemini APIへ直接送信）
+    async function submitForAIFeedback() {
+      if (recordingState.isRecording) {
+        stopRecording();
+      }
+      // 録音データの確定（onstop）完了を待ってから送信内容を組み立てる
+      if (recordingState.recorderStopped) {
+        await Promise.race([
+          recordingState.recorderStopped,
+          new Promise(r => setTimeout(r, 3000))
+        ]);
+        recordingState.recorderStopped = null;
+      }
+
+      const lesson = getCurrentLesson();
+      const hasRecordedAudio = recordingState.recordedBlob && recordingState.recordedBlob.size > 0;
+      const memoOrDemoText = document.getElementById('recognized-speech-text').value.trim();
+
+      if (!hasRecordedAudio && !memoOrDemoText) {
+        showCustomModal({
+          title: 'まだ録音が完了していません',
+          body: '「録音スタート」を押してシャドーイングを録音してください。マイクが使えない環境の場合は「※マイク未使用時のデモ発話をセット」を押すとAI添削をお試しいただけます。'
+        });
+        return;
+      }
+
+      const targetScript = lesson.sentences.map(s => s.en).join(' ');
+      const targetWordCount = targetScript.split(/\s+/).length;
+      const durationSec = Math.max(5, recordingState.elapsedSeconds || Math.round((targetWordCount / lesson.wpm) * 60));
+      const estimatedWpm = Math.min(240, Math.max(80, Math.round((targetWordCount / durationSec) * 60)));
+
+      // 添削画面へ切り替え、ローディング表示
+      switchTab('feedback');
+      document.getElementById('feedback-loading').classList.remove('hidden');
+      document.getElementById('feedback-content').classList.add('hidden');
+
+      const responseSchema = {
+        type: "OBJECT",
+        properties: {
+          score: { type: "INTEGER" },
+          estimatedWpm: { type: "INTEGER" },
+          summary: { type: "STRING" },
+          goodPoints: {
+            type: "ARRAY",
+            items: {
+              type: "OBJECT",
+              properties: {
+                phrase: { type: "STRING" },
+                badgeText: { type: "STRING" },
+                comment: { type: "STRING" }
+              },
+              required: ["phrase", "badgeText", "comment"]
+            }
+          },
+          developmentPoints: {
+            type: "ARRAY",
+            items: {
+              type: "OBJECT",
+              properties: {
+                phrase: { type: "STRING" },
+                category: { type: "STRING" },
+                phoneticGuide: { type: "STRING" },
+                advice: { type: "STRING" }
+              },
+              required: ["phrase", "category", "phoneticGuide", "advice"]
+            }
+          }
+        },
+        required: ["score", "estimatedWpm", "summary", "goodPoints", "developmentPoints"]
+      };
+
+      const isDemo = recordingState.isDemoMode && !hasRecordedAudio;
+      const idealSec = Math.round((targetWordCount / lesson.wpm) * 60);
+      const durationNote = `録音時間: 約${durationSec}秒 / お手本の想定時間: 約${idealSec}秒`;
+
+      const buildPrompt = (withAudio) => `
+あなたは「オウムAI（OUMU）」というパロディアプリ所属の英語シャドーイング添削コーチです。実在の英語学習サービスとは無関係です。
+受講生が提出したシャドーイングを、お手本英文と比較して添削レポートをJSON形式で作成してください。
+受講生が前向きになれるよう温かく伝えつつ、評価は事実に基づいて厳しめに行ってください。
+
+【教材タイトル】: ${lesson.title}
+【目標WPM】: ${lesson.wpm} WPM
+【お手本英文スクリプト】:
+"${targetScript}"
+【提出データ】: ${durationNote}
+${memoOrDemoText ? `【受講生の発話メモ/認識テキスト】: "${memoOrDemoText}"` : ''}
+${isDemo ? '【注意】: これは実際の音声ではなく、お手本から自動生成したデモ用データです。summaryの冒頭にその旨を明記してください。' : ''}
+
+【評価の前提】
+${withAudio
+  ? '- 添付された音声を実際に聴いて評価してください。聞き取れなかった箇所は「聞き取れなかった」と書き、推測で褒めたり指摘したりしないでください。\n- 録音時間が想定時間の半分未満の場合は、途中で止まっている可能性を指摘し、点数を下げてください。\n- 無音・雑音のみ、またはシャドーイングになっていない場合は score を 20 以下にしてください。'
+  : '- 音声は確認できていないため、発音・リズム・音変化は評価できません。発音について断定的な評価やほめ言葉は書かないでください。\n- summaryの冒頭に「※音声が確認できなかったため、テキストに基づく推定評価です」と明記してください。\n- score は 60 以下にしてください。'}
+
+【採点基準（score：0〜100の整数）】
+- 90〜100: お手本とほぼ一致。語の欠落・誤読がほぼなく、音変化やリズムも自然
+- 75〜89: 大半は正確。一部のリンキング・フラッピング・弱形などに改善点がある
+- 60〜74: 語の欠落や誤読が数か所あり、リズムがお手本と異なる箇所が多い
+- 40〜59: 欠落・誤読が多く、お手本との対応が不十分
+- 0〜39: ほとんど聞き取れない、無音、またはシャドーイングになっていない
+※根拠のない高得点は付けないでください。
+
+【添削ルール】:
+1. goodPoints（良かった点）は2つ作成してください。実際に正確にできていたフレーズだけを挙げ、該当箇所を [ ] で囲んでください。できていない箇所を褒めてはいけません。
+2. developmentPoints（改善ポイント）は2〜3つ作成してください。音声変化（リンキング、リダクション、フラッピング、弱形、子音の脱落など）の改善すべき箇所を [ ] で囲み、phoneticGuide には「[ワリフ] のように音をつなげて発音しましょう」のようなカタカナ発音イメージを、advice には実践的な改善アドバイスを日本語で記述してください。
+3. estimatedWpm は推定の発話速度（整数）を記入してください。
+`;
+
+      try {
+        let aiResult = null;
+
+        // 1. 実際の録音音声Blobがある場合は、Base64化してGemini APIに音声データを直接送信
+        if (hasRecordedAudio) {
+          try {
+            const base64Audio = await blobToBase64(recordingState.recordedBlob);
+            // コーデック指定パラメータを除去したクリーンなMIMEタイプを生成 (例: audio/webm;codecs=opus -> audio/webm)
+            const cleanMime = (recordingState.recordedMimeType || 'audio/mp4').split(';')[0].trim();
+
+            const audioPayload = {
+              contents: [
+                {
+                  parts: [
+                    { text: buildPrompt(true) },
+                    {
+                      inlineData: {
+                        mimeType: cleanMime,
+                        data: base64Audio
+                      }
+                    }
+                  ]
+                }
+              ],
+              generationConfig: {
+                responseMimeType: "application/json",
+                responseSchema
+              }
+            };
+
+            try {
+              aiResult = await fetchGeminiWithRetry(audioPayload, GEMINI_AUDIO_MODEL, 2);
+            } catch (primaryModelErr) {
+              // フォールバックモデルでも音声送信を試行
+              aiResult = await fetchGeminiWithRetry(audioPayload, GEMINI_MODEL, 2);
+            }
+          } catch (audioSendErr) {
+            console.warn('音声データの直接送信に失敗したためテキストベース評価にフォールバックします:', audioSendErr);
+          }
+        }
+
+        // 2. デモモード時、または音声直接送信が制限された場合のフォールバック評価
+        const evaluatedWithAudio = !!aiResult;
+        if (!aiResult) {
+          if (hasRecordedAudio) {
+            showToast('音声を解析できなかったため、テキストのみの推定評価になります', 'warning');
+          }
+          const textPayload = {
+            contents: [{ parts: [{ text: buildPrompt(false) }] }],
+            generationConfig: {
+              responseMimeType: "application/json",
+              responseSchema
+            }
+          };
+          aiResult = await fetchGeminiWithRetry(textPayload, GEMINI_MODEL, 3);
+        }
+
+        const now = new Date();
+        const dateStr = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} 提出${evaluatedWithAudio ? '（音声直接添削）' : '（テキスト推定）'}`;
+
+        // スコアは0〜100の整数に丸め、音声を聴けなかった場合は上限を60点に抑える
+        const rawScore = Number(aiResult.score);
+        let finalScore = Number.isFinite(rawScore) ? Math.round(rawScore) : 50;
+        finalScore = Math.max(0, Math.min(100, finalScore));
+        if (!evaluatedWithAudio) finalScore = Math.min(finalScore, 60);
+
+        const newReport = {
+          id: 'fb-' + Date.now(),
+          lessonId: lesson.id,
+          lessonTitle: lesson.title,
+          date: dateStr,
+          targetWpm: lesson.wpm,
+          userWpm: estimatedWpm,
+          score: finalScore,
+          summary: aiResult.summary,
+          goodPoints: aiResult.goodPoints,
+          developmentPoints: aiResult.developmentPoints,
+          submittedAt: new Date().toISOString(),
+          evalMode: evaluatedWithAudio ? 'audio' : 'text',
+          isDemo: isDemo
+        };
+
+        // 履歴追加＆ストリーク進捗更新
+        appState.feedbackHistory.unshift(newReport);
+        appState.selectedFeedbackId = newReport.id;
+        appState.totalSubmissions += 1;
+
+        // 提出日を記録し、連続日数・週間カレンダーを再計算（同じ日の複数提出で二重加算しない）
+        if (!Array.isArray(appState.submittedDates)) appState.submittedDates = [];
+        const todayStr = dateKey();
+        if (!appState.submittedDates.includes(todayStr)) appState.submittedDates.push(todayStr);
+        appState.submittedDates = appState.submittedDates.slice(-400);
+        recomputeStreaks();
+
+        sendLogToSheet(newReport);
+        saveState();
+        renderAll();
+        showToast('✨ AIプロコーチからの発音添削レポートが届きました！', 'success');
+      } catch (err) {
+        console.error('AI添削生成エラー:', err);
+        showToast('添削レポートの生成中に通信エラーが発生しました。もう一度お試しください。', 'error');
+      } finally {
+        document.getElementById('feedback-loading').classList.add('hidden');
+        renderFeedback();
+        lucide.createIcons();
+      }
+    }
+
+    // ==========================================
+    // 10. 添削フィードバック画面レンダリング
+    // ==========================================
+    // 週平均スコアの推移（月〜日を1週間として、直近8週分）
+    function getWeeklyScoreSeries(weeks = 8) {
+      const reports = appState.feedbackHistory.filter(r => r.submittedAt);
+      const thisMonday = mondayOf(new Date());
+      const series = [];
+      for (let w = weeks - 1; w >= 0; w--) {
+        const start = addDays(thisMonday, -7 * w);
+        const end = addDays(start, 7);
+        const scores = reports
+          .filter(r => {
+            const t = new Date(r.submittedAt);
+            return t >= start && t < end;
+          })
+          .map(r => r.score);
+        const avg = scores.length
+          ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+          : null;
+        series.push({ start, avg, count: scores.length });
+      }
+      return series;
+    }
+
+    function renderScoreTrend() {
+      const el = document.getElementById('score-trend-section');
+      if (!el) return;
+      const series = getWeeklyScoreSeries(8);
+      const current = series[series.length - 1];
+      const previousWithData = [...series.slice(0, -1)].reverse().find(s => s.avg !== null);
+
+      let headline;
+      if (current.avg === null) {
+        headline = '<p class="text-sm font-bold text-slate-500">今週はまだ提出がありません</p>';
+      } else {
+        let diffHtml = '<span class="text-xs text-slate-400">先週のデータはありません</span>';
+        if (previousWithData) {
+          const diff = current.avg - previousWithData.avg;
+          const cls = diff > 0 ? 'text-goodGreen' : diff < 0 ? 'text-devCoral' : 'text-slate-500';
+          const sign = diff > 0 ? '+' : '';
+          diffHtml = `<span class="text-xs font-bold ${cls}">前週比 ${sign}${diff}点</span>`;
+        }
+        headline = `
+          <div class="flex items-end gap-3">
+            <p class="text-3xl font-extrabold text-tealMain leading-none">${current.avg}<span class="text-sm font-bold text-slate-500 ml-0.5">/ 100</span></p>
+            ${diffHtml}
+          </div>
+          <p class="text-xs text-slate-500 mt-1">今週の提出 ${current.count}回の平均</p>`;
+      }
+
+      const W = 600, H = 220, padL = 36, padR = 16, padT = 16, padB = 32;
+      const xAt = i => padL + (i * (W - padL - padR)) / (series.length - 1);
+      const yAt = v => padT + ((100 - v) / 100) * (H - padT - padB);
+
+      const grid = [0, 25, 50, 75, 100].map(v => `
+        <line x1="${padL}" x2="${W - padR}" y1="${yAt(v)}" y2="${yAt(v)}" stroke="#E2E8F0" stroke-width="1" />
+        <text x="${padL - 6}" y="${yAt(v) + 4}" text-anchor="end" font-size="11" fill="#94A3B8">${v}</text>`).join('');
+
+      const points = series
+        .map((s, i) => (s.avg !== null ? { x: xAt(i), y: yAt(s.avg), avg: s.avg } : null))
+        .filter(Boolean);
+      const polyline = points.length > 1
+        ? `<polyline fill="none" stroke="#00A896" stroke-width="3" stroke-linejoin="round" points="${points.map(p => `${p.x},${p.y}`).join(' ')}" />`
+        : '';
+      const dots = points.map(p => `
+        <circle cx="${p.x}" cy="${p.y}" r="5" fill="#00A896" />
+        <text x="${p.x}" y="${p.y - 10}" text-anchor="middle" font-size="12" font-weight="700" fill="#008778">${p.avg}</text>`).join('');
+      const labels = series.map((s, i) => `
+        <text x="${xAt(i)}" y="${H - 10}" text-anchor="middle" font-size="11" fill="#64748B">${s.start.getMonth() + 1}/${s.start.getDate()}</text>`).join('');
+
+      el.innerHTML = `
+        <div class="bg-white rounded-3xl p-5 sm:p-6 shadow-card border border-slate-100 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="text-base font-extrabold text-slate-800">📈 週間スコアの推移</h3>
+            <span class="text-[11px] font-semibold text-slate-400">週平均（月〜日）・直近8週</span>
+          </div>
+          ${headline}
+          <div class="bg-bgGray rounded-2xl p-2 overflow-x-auto">
+            <svg viewBox="0 0 ${W} ${H}" class="w-full min-w-[320px] h-auto">
+              ${grid}
+              ${polyline}
+              ${dots}
+              ${labels}
+            </svg>
+          </div>
+        </div>`;
+    }
+
+    // 提出ログをGoogleスプレッドシートへ送信（Apps Scriptのウェブアプリ経由）
+    async function sendLogToSheet(report) {
+      if (!SHEET_ENDPOINT_URL) {
+        console.warn('SHEET_ENDPOINT_URL が未設定のため、スプレッドシートには保存されません');
+        showToast('スプレッドシート未設定のため、ログはこの端末にのみ保存されました', 'warning');
+        return;
+      }
+      const payload = {
+        submittedAt: report.submittedAt,
+        lessonTitle: report.lessonTitle,
+        targetWpm: report.targetWpm,
+        userWpm: report.userWpm,
+        score: report.score,
+        evalMode: report.evalMode,
+        isDemo: report.isDemo,
+        summary: report.summary,
+        goodPoints: (report.goodPoints || []).map(p => `${p.phrase}：${p.comment}`).join('\n'),
+        developmentPoints: (report.developmentPoints || []).map(p => `${p.phrase}（${p.category}）：${p.advice}`).join('\n')
+      };
+      try {
+        // Apps Scriptへはno-corsで送信（text/plainによりプリフライト無しで届く）。応答は読めないため送信の成否は確認できません
+        await fetch(SHEET_ENDPOINT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        console.error('スプレッドシート保存エラー:', err);
+        showToast('スプレッドシートへの保存に失敗しました。通信環境をご確認ください', 'error');
+      }
+    }
+
+    function renderFeedback() {
+      renderScoreTrend();
+
+      const contentEl = document.getElementById('feedback-content');
+      const emptyEl = document.getElementById('feedback-empty');
+      if (!appState.feedbackHistory.length) {
+        document.getElementById('fb-history-select').innerHTML = '';
+        contentEl.classList.add('hidden');
+        emptyEl.classList.remove('hidden');
+        return;
+      }
+      contentEl.classList.remove('hidden');
+      emptyEl.classList.add('hidden');
+
+      const selectEl = document.getElementById('fb-history-select');
+      selectEl.innerHTML = appState.feedbackHistory.map(fb => `
+        <option value="${fb.id}" ${fb.id === appState.selectedFeedbackId ? 'selected' : ''}>
+          ${fb.lessonTitle} (${fb.score}点)
+        </option>
+      `).join('');
+
+      const report = appState.feedbackHistory.find(f => f.id === appState.selectedFeedbackId) || appState.feedbackHistory[0];
+      if (!report) return;
+
+      document.getElementById('fb-date').textContent = report.date;
+      document.getElementById('fb-lesson-title').textContent = report.lessonTitle;
+      document.getElementById('fb-target-wpm').textContent = `${report.targetWpm} WPM`;
+      document.getElementById('fb-user-wpm').textContent = `${report.userWpm} WPM`;
+      document.getElementById('fb-score').textContent = report.score;
+      document.getElementById('fb-summary').textContent = report.summary;
+
+      // 良かった点 (Good Points) レンダリング
+      const goodList = document.getElementById('fb-good-list');
+      goodList.innerHTML = report.goodPoints.map(item => `
+        <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-card border-l-4 border-goodGreen border-t border-r border-b border-slate-100 space-y-2.5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded-full bg-goodGreen text-white text-xs font-extrabold">✓ Good</span>
+              <span class="px-2.5 py-0.5 rounded-full bg-goodBg text-goodGreen text-xs font-bold">${item.badgeText}</span>
+            </div>
+            <button onclick="speakPhrase('${escapeQuotes(item.phrase)}')" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-goodBg text-slate-700 hover:text-goodGreen text-xs font-bold flex items-center gap-1 transition">
+              <i data-lucide="volume-2" class="w-3.5 h-3.5"></i> お手本を聞く
+            </button>
+          </div>
+          <p class="text-sm sm:text-base font-bold text-slate-800 bg-goodBg/50 px-3 py-2 rounded-xl border border-goodGreen/20">
+            ${highlightBrackets(item.phrase, 'text-goodGreen font-extrabold underline decoration-2')}
+          </p>
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">${item.comment}</p>
+        </div>
+      `).join('');
+
+      // 改善ポイント (Development Points) レンダリング
+      const devList = document.getElementById('fb-dev-list');
+      devList.innerHTML = report.developmentPoints.map(item => `
+        <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-card border-l-4 border-devCoral border-t border-r border-b border-slate-100 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded-full bg-devCoral text-white text-xs font-extrabold">🔥 Development</span>
+              <span class="px-2.5 py-0.5 rounded-full bg-devBg text-devCoral text-xs font-bold">${item.category}</span>
+            </div>
+            <button onclick="speakPhrase('${escapeQuotes(item.phrase)}')" class="px-3 py-1.5 rounded-xl bg-devBg hover:bg-devCoral text-devCoral hover:text-white text-xs font-extrabold flex items-center gap-1.5 transition">
+              <i data-lucide="volume-2" class="w-3.5 h-3.5"></i> 該当箇所をピンポイント再生
+            </button>
+          </div>
+
+          <p class="text-sm sm:text-base font-bold text-slate-800 bg-devBg/60 px-3 py-2 rounded-xl border border-devCoral/20">
+            ${highlightBrackets(item.phrase, 'text-devCoral font-extrabold underline decoration-2')}
+          </p>
+
+          <div class="bg-amber-50/80 border border-amber-200/80 rounded-xl px-3 py-2 flex items-center gap-2">
+            <span class="text-sm">💡</span>
+            <p class="text-xs font-extrabold text-amber-900">${item.phoneticGuide}</p>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">${item.advice}</p>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    function selectFeedbackHistory(fbId) {
+      appState.selectedFeedbackId = fbId;
+      saveState();
+      renderFeedback();
+    }
+
+    function retryFromFeedback() {
+      const report = appState.feedbackHistory.find(f => f.id === appState.selectedFeedbackId);
+      if (report && report.lessonId) {
+        appState.currentLessonId = report.lessonId;
+        saveState();
+      }
+      setTrainingStep(3);
+      switchTab('training');
+    }
+
+    function highlightBrackets(text, className) {
+      return text.replace(/\[([^\]]+)\]/g, `<span class="${className}">[$1]</span>`);
+    }
+
+    function escapeQuotes(str) {
+      return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    // ==========================================
+    // 11. 教材一覧＆AIオリジナル教材作成 (Gemini API)
+    // ==========================================
+    let currentLibraryFilter = 'ALL';
+    let currentGeneratorMode = 'topic';
+
+    function setGeneratorMode(mode) {
+      currentGeneratorMode = mode;
+      const topicBtn = document.getElementById('gen-mode-topic');
+      const customBtn = document.getElementById('gen-mode-custom');
+      const topicWrap = document.getElementById('gen-topic-input-wrap');
+      const customWrap = document.getElementById('gen-custom-input-wrap');
+
+      if (mode === 'topic') {
+        topicBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold bg-white text-tealDark shadow-2xs transition';
+        customBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 transition';
+        topicWrap.classList.remove('hidden');
+        customWrap.classList.add('hidden');
+      } else {
+        customBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold bg-white text-tealDark shadow-2xs transition';
+        topicBtn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-bold text-slate-600 transition';
+        customWrap.classList.remove('hidden');
+        topicWrap.classList.add('hidden');
+      }
+    }
+
+    async function generateCustomLesson() {
+      const targetWpm = Number(document.getElementById('gen-wpm-slider').value);
+      const sentenceCount = Number(document.getElementById('gen-sentence-count').value);
+      const topicText = document.getElementById('gen-topic-input').value.trim();
+      const customEnglish = document.getElementById('gen-custom-textarea').value.trim();
+
+      if (currentGeneratorMode === 'topic' && !topicText) {
+        showToast('生成したいビジネステーマを入力してください', 'warning');
+        return;
+      }
+      if (currentGeneratorMode === 'custom' && !customEnglish) {
+        showToast('教材化したい英語スクリプトを入力してください', 'warning');
+        return;
+      }
+
+      const btn = document.getElementById('generate-lesson-btn');
+      const originalHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<span class="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full"></span><span>Gemini AIが音声変化解説付き教材を作成中...</span>`;
+
+      const instruction = currentGeneratorMode === 'topic'
+        ? `テーマ「${topicText}」に関する、リアルで洗練されたビジネス英語スピーチまたは会議発言を${sentenceCount}文作成してください。目標速度は WPM ${targetWpm} に適した語彙・文構造にしてください。`
+        : `以下の英語スクリプトを、自然な文区切り（約${sentenceCount}文）に整理し、日本語訳と音声変化（リンキング・リダクション・フラッピング）の解説を付与してシャドーイング教材化してください：\n"${customEnglish}"`;
+
+      const prompt = `
+あなたは英語シャドーイング学習アプリ「OUMU AI」（パロディ）のカリキュラム開発者です。
+${instruction}
+
+各文（sentences）には、英文（en）、自然な日本語訳（ja）、そしてネイティブ発音で重要となる音声変化ポイント（phonetics: target英語フレーズ, pronunciationカタカナ発音イメージ, typeリンキング/リダクション/フラッピング等, tip短い解説）を1〜2個ずつ必ず付与してください。
+`;
+
+      const payload = {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              title: { type: "STRING" },
+              subtitle: { type: "STRING" },
+              level: { type: "STRING" },
+              sentences: {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    en: { type: "STRING" },
+                    ja: { type: "STRING" },
+                    phonetics: {
+                      type: "ARRAY",
+                      items: {
+                        type: "OBJECT",
+                        properties: {
+                          target: { type: "STRING" },
+                          pronunciation: { type: "STRING" },
+                          type: { type: "STRING" },
+                          tip: { type: "STRING" }
+                        },
+                        required: ["target", "pronunciation", "type", "tip"]
+                      }
+                    }
+                  },
+                  required: ["en", "ja", "phonetics"]
+                }
+              }
+            },
+            required: ["title", "subtitle", "level", "sentences"]
+          }
+        }
+      };
+
+      try {
+        const result = await fetchGeminiWithRetry(payload);
+        const newLesson = {
+          id: 'custom-' + Date.now(),
+          title: result.title,
+          subtitle: result.subtitle,
+          category: 'AI作成',
+          wpm: targetWpm,
+          level: result.level || (targetWpm >= 170 ? '上級' : targetWpm >= 145 ? '中級' : '基礎'),
+          sentences: result.sentences
+        };
+
+        appState.customLessons.unshift(newLesson);
+        appState.currentLessonId = newLesson.id;
+        saveState();
+
+        showToast(`🎉 オリジナル教材「${newLesson.title}」を作成しました！`, 'success');
+        setTrainingStep(1);
+        switchTab('training');
+      } catch (err) {
+        console.error('教材生成エラー:', err);
+        showToast('AI教材の生成に失敗しました。もう一度お試しください。', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+        lucide.createIcons();
+      }
+    }
+
+    function filterLibrary(cat) {
+      currentLibraryFilter = cat;
+      document.querySelectorAll('.lib-filter-btn').forEach(btn => {
+        if (btn.dataset.cat === cat) {
+          btn.className = 'lib-filter-btn px-3 py-1.5 rounded-full text-xs font-bold bg-tealMain text-white transition';
+        } else {
+          btn.className = 'lib-filter-btn px-3 py-1.5 rounded-full text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 transition';
+        }
+      });
+      renderLibrary();
+    }
+
+    function renderLibrary() {
+      const grid = document.getElementById('library-cards-grid');
+      const allLessons = getAllLessons();
+      const filtered = currentLibraryFilter === 'ALL'
+        ? allLessons
+        : allLessons.filter(l => l.category === currentLibraryFilter);
+
+      grid.innerHTML = filtered.map(lesson => {
+        const isCurrent = lesson.id === appState.currentLessonId;
+        return `
+          <div class="bg-white rounded-2xl p-5 shadow-card border ${isCurrent ? 'border-tealMain ring-2 ring-tealMain/20' : 'border-slate-100'} flex flex-col justify-between gap-4 transition hover:shadow-md">
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-md ${lesson.category === 'AI作成' ? 'bg-purple-100 text-purple-700' : 'bg-tealLight text-tealDark'}">
+                  ${lesson.category}
+                </span>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[11px] font-extrabold px-2 py-0.5 rounded bg-accentYellow text-slate-900">WPM ${lesson.wpm}</span>
+                  <span class="text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600">${lesson.level}</span>
+                </div>
+              </div>
+              <h4 class="text-base font-extrabold text-slate-800">${lesson.title}</h4>
+              <p class="text-xs text-slate-500 mt-0.5">${lesson.subtitle}</p>
+              <p class="text-xs text-slate-600 mt-3 line-clamp-2 bg-bgGray p-2.5 rounded-xl">
+                "${lesson.sentences[0]?.en || ''}"
+              </p>
+            </div>
+
+            <button onclick="selectLessonFromLibrary('${lesson.id}')" class="w-full py-2.5 px-4 rounded-xl ${
+              isCurrent
+                ? 'bg-tealMain text-white font-extrabold'
+                : 'bg-actionBlue hover:bg-actionBlueDark text-white font-bold'
+            } text-xs sm:text-sm flex items-center justify-center gap-1.5 transition">
+              <span>${isCurrent ? '選択中の課題を開く ▶' : 'この教材でトレーニングする ▶'}</span>
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectLessonFromLibrary(lessonId) {
+      stopAudioPlayback();
+      appState.currentLessonId = lessonId;
+      playerState.activeSentenceIndex = 0;
+      saveState();
+      setTrainingStep(1);
+      switchTab('training');
+    }
+
+    // ページ読み込み時にアプリ起動（blobプレビュー環境でも確実に実行）
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+  </script>
+</body>
+</html>
