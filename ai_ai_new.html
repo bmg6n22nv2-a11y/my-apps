@@ -220,6 +220,31 @@
       max-width: 210px;
     }
 
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .download-app-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 7px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--primary-border);
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .download-app-btn:hover {
+      background: #e0e7ff;
+    }
+
     .api-status-text {
       overflow: hidden;
       text-overflow: ellipsis;
@@ -932,6 +957,205 @@
       color: var(--danger);
     }
 
+    /* =====================================================================
+       発話テキスト化＆英文差分比較（Diff）スタイル
+       ===================================================================== */
+    .diff-summary-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .diff-stats-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .diff-rate-badge {
+      font-size: 14px;
+      font-weight: 900;
+      padding: 5px 11px;
+      border-radius: 10px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      border: 1px solid var(--primary-border);
+    }
+
+    .diff-rate-badge.high {
+      background: var(--success-soft);
+      color: #065f46;
+      border-color: var(--success-border);
+    }
+
+    .diff-rate-badge.mid {
+      background: var(--warning-soft);
+      color: #92400e;
+      border-color: var(--warning-border);
+    }
+
+    .diff-rate-badge.low {
+      background: var(--danger-soft);
+      color: #9f1239;
+      border-color: var(--danger-border);
+    }
+
+    .diff-stat-pill {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 7px;
+    }
+
+    .diff-stat-pill.match {
+      background: var(--success-soft);
+      color: #065f46;
+      border: 1px solid var(--success-border);
+    }
+
+    .diff-stat-pill.miss {
+      background: var(--danger-soft);
+      color: #9f1239;
+      border: 1px solid var(--danger-border);
+    }
+
+    .diff-stat-pill.extra {
+      background: var(--warning-soft);
+      color: #92400e;
+      border: 1px solid var(--warning-border);
+    }
+
+    .diff-legend {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-bottom: 10px;
+    }
+
+    .diff-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 700;
+    }
+
+    .diff-swatch {
+      width: 11px;
+      height: 11px;
+      border-radius: 3px;
+      display: inline-block;
+    }
+
+    .diff-swatch.match {
+      background: #d1fae5;
+      border: 1px solid #34d399;
+    }
+
+    .diff-swatch.miss {
+      background: #ffe4e6;
+      border: 1px solid #fb7185;
+    }
+
+    .diff-swatch.extra {
+      background: #fef3c7;
+      border: 1px solid #fbbf24;
+    }
+
+    .diff-box {
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 15px;
+      line-height: 1.9;
+      word-break: break-word;
+    }
+
+    .diff-token {
+      display: inline-block;
+      padding: 0 4px;
+      margin: 1px 2px;
+      border-radius: 5px;
+      font-weight: 600;
+    }
+
+    .diff-token.match {
+      color: var(--text);
+    }
+
+    .diff-token.match-strong {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .diff-token.miss {
+      background: #ffe4e6;
+      color: #be123c;
+      text-decoration: line-through;
+      border: 1px solid #fecdd3;
+    }
+
+    .diff-token.extra {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fde68a;
+    }
+
+    .diff-side-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .diff-side-card {
+      background: var(--surface-soft);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+
+    .diff-side-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .diff-side-body {
+      font-size: 15px;
+      line-height: 1.85;
+      word-break: break-word;
+    }
+
+    .quick-diff-panel {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 14px;
+      background: #ffffff;
+      border: 1px solid var(--primary-border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .diff-footer-actions {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
     .alert-box {
       margin-top: 12px;
       padding: 12px 14px;
@@ -951,6 +1175,12 @@
       background: var(--success-soft);
       border: 1px solid var(--success-border);
       color: #065f46;
+    }
+
+    .alert-info {
+      background: var(--primary-soft);
+      border: 1px solid var(--primary-border);
+      color: #3730a3;
     }
 
     .loading-box {
@@ -1324,10 +1554,15 @@
       </nav>
 
       <!-- APIステータスバッジ -->
-      <button type="button" id="header-api-btn" class="api-status-btn">
-        <span id="header-api-dot" class="status-dot"></span>
-        <span id="header-api-text" class="api-status-text">APIキー未設定</span>
-      </button>
+      <div class="header-actions">
+        <button type="button" id="download-html-btn" class="download-app-btn" title="このWebアプリを単体HTMLファイルとして保存">
+          ⬇ HTML保存
+        </button>
+        <button type="button" id="header-api-btn" class="api-status-btn">
+          <span id="header-api-dot" class="status-dot"></span>
+          <span id="header-api-text" class="api-status-text">APIキー未設定</span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -1558,21 +1793,62 @@
               <button type="button" id="submit-review-btn" class="btn btn-gradient btn-lg">
                 AIで発音添削する
               </button>
+              <button type="button" id="quick-transcribe-btn" class="btn btn-soft" style="width:100%;">
+                📝 聞き取りテキスト化＆英文比較のみ実行
+              </button>
             </div>
 
-            <!-- AI添削ローディング -->
+            <!-- AI添削・文字起こしローディング -->
             <div id="review-loading-box" class="loading-box hidden">
               <div class="spinner"></div>
-              <div style="font-size:14px;font-weight:800;color:#1e1b4b;">Gemini AIが音声データを解析中...</div>
-              <div style="font-size:12px;color:#4338ca;margin-top:4px;">リンキング・リダクション・抑揚・明瞭度を採点しています</div>
+              <div id="review-loading-title" style="font-size:14px;font-weight:800;color:#1e1b4b;">Gemini AIが音声データを解析中...</div>
+              <div id="review-loading-sub" style="font-size:12px;color:#4338ca;margin-top:4px;">リンキング・リダクション・抑揚・明瞭度を採点しています</div>
             </div>
 
             <!-- AI添削エラー -->
             <div id="review-error-box" class="alert-box alert-error hidden">
               <div style="font-weight:800;margin-bottom:4px;">AI添削エラー</div>
               <div id="review-error-text"></div>
-              <div style="margin-top:8px;">
+              <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:8px;">
+                <button type="button" id="force-send-btn" class="btn btn-primary btn-sm hidden">無視してこのままAIへ送信する（強制送信）</button>
                 <button type="button" id="goto-settings-err-btn" class="btn btn-danger btn-sm">「3. 履歴・API設定」を確認する</button>
+              </div>
+            </div>
+
+            <!-- 自動音量補正などの安心注記 -->
+            <div id="review-notice-box" class="alert-box alert-info hidden"></div>
+
+            <!-- クイック聞き取りテキスト化＆英文比較パネル -->
+            <div id="quick-diff-panel" class="quick-diff-panel hidden">
+              <div class="card-header" style="margin-bottom:10px;">
+                <strong style="font-size:14px;color:var(--primary);">📝 聞き取りテキスト化 ＆ 英文比較</strong>
+                <button type="button" id="close-quick-diff-btn" class="btn btn-neutral btn-sm">閉じる ✕</button>
+              </div>
+
+              <div class="diff-summary-row">
+                <div class="diff-stats-group">
+                  <span id="quick-diff-rate" class="diff-rate-badge">一致率 0%</span>
+                  <span id="quick-diff-match" class="diff-stat-pill match">一致 0語</span>
+                  <span id="quick-diff-miss" class="diff-stat-pill miss">抜け 0語</span>
+                  <span id="quick-diff-extra" class="diff-stat-pill extra">違い 0語</span>
+                </div>
+                <div class="seg-control" role="group" aria-label="クイック比較表示切替">
+                  <button type="button" class="seg-btn active" data-diff-target="quick" data-diff-mode="unified">差分統合</button>
+                  <button type="button" class="seg-btn" data-diff-target="quick" data-diff-mode="side">並べて比較</button>
+                </div>
+              </div>
+
+              <div class="diff-legend">
+                <span class="diff-legend-item"><span class="diff-swatch match"></span>一致</span>
+                <span class="diff-legend-item"><span class="diff-swatch miss"></span>抜け・聞き取れず</span>
+                <span class="diff-legend-item"><span class="diff-swatch extra"></span>違い・余分</span>
+              </div>
+
+              <div id="quick-diff-body"></div>
+
+              <div class="diff-footer-actions">
+                <span style="font-size:11px;color:var(--text-muted);">※お手本を見ずに音声から忠実に書き起こした結果です</span>
+                <button type="button" id="quick-copy-heard-btn" class="btn btn-neutral btn-sm">聞き取り英文をコピー</button>
               </div>
             </div>
 
@@ -1626,6 +1902,35 @@
               <div style="font-size:11px;font-weight:800;color:#a5b4fc;margin-bottom:4px;">AIコーチ総評</div>
               <p id="rep-summary" style="margin:0;font-size:13px;line-height:1.7;color:#f1f5f9;"></p>
             </div>
+          </div>
+
+          <!-- 発話テキスト化＆お手本英文との比較カード -->
+          <div id="rep-diff-card" class="card">
+            <div class="card-header">
+              <h3 style="margin:0;font-size:15px;font-weight:800;color:var(--primary);">📝 発話テキスト化 ＆ お手本英文との比較</h3>
+              <button type="button" id="rep-copy-heard-btn" class="btn btn-neutral btn-sm">聞き取り英文をコピー</button>
+            </div>
+
+            <div class="diff-summary-row">
+              <div class="diff-stats-group">
+                <span id="rep-diff-rate" class="diff-rate-badge">一致率 0%</span>
+                <span id="rep-diff-match" class="diff-stat-pill match">一致 0語</span>
+                <span id="rep-diff-miss" class="diff-stat-pill miss">抜け 0語</span>
+                <span id="rep-diff-extra" class="diff-stat-pill extra">違い 0語</span>
+              </div>
+              <div class="seg-control" role="group" aria-label="レポート比較表示切替">
+                <button type="button" class="seg-btn active" data-diff-target="rep" data-diff-mode="unified">差分ハイライト（統合）</button>
+                <button type="button" class="seg-btn" data-diff-target="rep" data-diff-mode="side">並べて比較</button>
+              </div>
+            </div>
+
+            <div class="diff-legend">
+              <span class="diff-legend-item"><span class="diff-swatch match"></span>一致</span>
+              <span class="diff-legend-item"><span class="diff-swatch miss"></span>抜け・聞き取れず（取り消し線）</span>
+              <span class="diff-legend-item"><span class="diff-swatch extra"></span>違い・余分（+表示）</span>
+            </div>
+
+            <div id="rep-diff-body"></div>
           </div>
 
           <div class="report-two-col">
@@ -1916,6 +2221,11 @@
         meterGainNode: null,
         meterFrameId: null,
         currentReport: null,
+        repDiffMode: 'unified',
+        quickDiffMode: 'unified',
+        quickExpectedText: '',
+        quickHeardText: '',
+        pendingForceAction: null,
         history: []
       };
 
@@ -2050,6 +2360,244 @@
           if (arr[i].trim().length > 0) c++;
         }
         return c;
+      }
+
+      function copyTextToClipboard(text) {
+        var val = String(text || '').trim();
+        if (!val) {
+          showToast('コピーするテキストがありません。', 'error');
+          return;
+        }
+        try {
+          var ta = document.createElement('textarea');
+          ta.value = val;
+          ta.setAttribute('readonly', '');
+          ta.style.position = 'fixed';
+          ta.style.top = '-9999px';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          ta.setSelectionRange(0, val.length);
+          var ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+          if (ok) showToast('聞き取り英文をコピーしました！', 'success');
+          else showToast('コピーに失敗しました。', 'error');
+        } catch (e) {
+          showToast('コピーに失敗しました。', 'error');
+        }
+      }
+
+      /* -------------------------------------------------------------------
+         2.5. 単語レベル差分比較（LCSアルゴリズム）＆レンダリングエンジン
+         ------------------------------------------------------------------- */
+      function tokenizeForDiff(text) {
+        var str = String(text || '').trim();
+        if (!str) return [];
+        var parts = str.split(/\s+/);
+        var tokens = [];
+        for (var i = 0; i < parts.length; i++) {
+          var raw = parts[i];
+          var norm = raw
+            .toLowerCase()
+            .replace(/[’‘`]/g, "'")
+            .replace(/^[^a-z0-9']+|[^a-z0-9']+$/g, '');
+          if (norm.length > 0) {
+            tokens.push({ raw: raw, norm: norm });
+          }
+        }
+        return tokens;
+      }
+
+      function computeWordDiff(expectedText, heardText) {
+        var exp = tokenizeForDiff(expectedText);
+        var hrd = tokenizeForDiff(heardText);
+        var m = exp.length;
+        var n = hrd.length;
+
+        // LCS DPテーブル構築
+        var dp = new Array(m + 1);
+        for (var i = 0; i <= m; i++) {
+          dp[i] = new Int32Array(n + 1);
+        }
+        for (var r = 1; r <= m; r++) {
+          for (var c = 1; c <= n; c++) {
+            if (exp[r - 1].norm === hrd[c - 1].norm) {
+              dp[r][c] = dp[r - 1][c - 1] + 1;
+            } else {
+              dp[r][c] = dp[r - 1][c] >= dp[r][c - 1] ? dp[r - 1][c] : dp[r][c - 1];
+            }
+          }
+        }
+
+        // バックトラックして単語アライメントを生成
+        var ops = [];
+        var x = m;
+        var y = n;
+        var matchCount = 0;
+        var missCount = 0;
+        var extraCount = 0;
+
+        while (x > 0 || y > 0) {
+          if (x > 0 && y > 0 && exp[x - 1].norm === hrd[y - 1].norm) {
+            ops.push({ type: 'match', expected: exp[x - 1].raw, heard: hrd[y - 1].raw });
+            matchCount++;
+            x--;
+            y--;
+          } else if (x > 0 && (y === 0 || dp[x - 1][y] >= dp[x][y - 1])) {
+            ops.push({ type: 'miss', expected: exp[x - 1].raw });
+            missCount++;
+            x--;
+          } else {
+            ops.push({ type: 'extra', heard: hrd[y - 1].raw });
+            extraCount++;
+            y--;
+          }
+        }
+        ops.reverse();
+
+        var matchRate = m > 0 ? Math.round((matchCount / m) * 100) : 0;
+        return {
+          ops: ops,
+          totalExpected: m,
+          totalHeard: n,
+          matchCount: matchCount,
+          missCount: missCount,
+          extraCount: extraCount,
+          matchRate: matchRate
+        };
+      }
+
+      function renderDiffWidget(prefix, expectedText, heardText, viewMode) {
+        var rateEl = $(prefix + '-diff-rate');
+        var matchEl = $(prefix + '-diff-match');
+        var missEl = $(prefix + '-diff-miss');
+        var extraEl = $(prefix + '-diff-extra');
+        var bodyEl = $(prefix + '-diff-body');
+        if (!bodyEl) return;
+
+        // 切替ボタンのアクティブ状態を同期
+        var segBtns = document.querySelectorAll('[data-diff-target="' + prefix + '"]');
+        for (var b = 0; b < segBtns.length; b++) {
+          if (segBtns[b].getAttribute('data-diff-mode') === viewMode) segBtns[b].classList.add('active');
+          else segBtns[b].classList.remove('active');
+        }
+
+        bodyEl.innerHTML = '';
+
+        // 古い履歴などでお手本英文が取得できない場合のフォールバック表示
+        if (!expectedText || !String(expectedText).trim()) {
+          if (rateEl) {
+            rateEl.className = 'diff-rate-badge';
+            rateEl.textContent = '比較不可（旧履歴）';
+          }
+          if (matchEl) matchEl.textContent = '一致 -';
+          if (missEl) missEl.textContent = '抜け -';
+          if (extraEl) extraEl.textContent = '違い -';
+
+          var fallbackBox = document.createElement('div');
+          fallbackBox.className = 'diff-box';
+          fallbackBox.textContent = heardText ? 'AI聞き取りテキスト: ' + heardText : '（発話が聞き取れませんでした）';
+          bodyEl.appendChild(fallbackBox);
+          return;
+        }
+
+        var diff = computeWordDiff(expectedText, heardText || '');
+
+        if (rateEl) {
+          rateEl.textContent = '一致率 ' + diff.matchRate + '%';
+          rateEl.className = 'diff-rate-badge ' + (diff.matchRate >= 80 ? 'high' : diff.matchRate >= 50 ? 'mid' : 'low');
+        }
+        if (matchEl) matchEl.textContent = '一致 ' + diff.matchCount + '語';
+        if (missEl) missEl.textContent = '抜け ' + diff.missCount + '語';
+        if (extraEl) extraEl.textContent = '違い ' + diff.extraCount + '語';
+
+        if (viewMode === 'side') {
+          var stack = document.createElement('div');
+          stack.className = 'diff-side-stack';
+
+          // 上段：お手本英文（抜け・未認識を赤ハイライト）
+          var expCard = document.createElement('div');
+          expCard.className = 'diff-side-card';
+          var expLbl = document.createElement('div');
+          expLbl.className = 'diff-side-label';
+          expLbl.innerHTML = '<span>お手本英文（赤＝聞き取れなかった単語）</span><span>' + diff.totalExpected + ' words</span>';
+          var expBody = document.createElement('div');
+          expBody.className = 'diff-side-body';
+          for (var i = 0; i < diff.ops.length; i++) {
+            var op1 = diff.ops[i];
+            if (op1.type === 'match') {
+              var s1 = document.createElement('span');
+              s1.className = 'diff-token match';
+              s1.textContent = op1.expected;
+              expBody.appendChild(s1);
+            } else if (op1.type === 'miss') {
+              var s2 = document.createElement('span');
+              s2.className = 'diff-token miss';
+              s2.textContent = op1.expected;
+              expBody.appendChild(s2);
+            }
+          }
+          expCard.appendChild(expLbl);
+          expCard.appendChild(expBody);
+
+          // 下段：AIが聞き取った英文（一致を緑・違いを黄ハイライト）
+          var hrdCard = document.createElement('div');
+          hrdCard.className = 'diff-side-card';
+          var hrdLbl = document.createElement('div');
+          hrdLbl.className = 'diff-side-label';
+          hrdLbl.innerHTML = '<span>AIが聞き取った英文（緑＝一致 / 黄＝違い・余分）</span><span>' + diff.totalHeard + ' words</span>';
+          var hrdBody = document.createElement('div');
+          hrdBody.className = 'diff-side-body';
+          if (diff.totalHeard === 0) {
+            var emptySpan = document.createElement('span');
+            emptySpan.style.color = 'var(--danger)';
+            emptySpan.style.fontSize = '13px';
+            emptySpan.style.fontWeight = '700';
+            emptySpan.textContent = '（発話が聞き取れませんでした）';
+            hrdBody.appendChild(emptySpan);
+          } else {
+            for (var j = 0; j < diff.ops.length; j++) {
+              var op2 = diff.ops[j];
+              if (op2.type === 'match') {
+                var h1 = document.createElement('span');
+                h1.className = 'diff-token match-strong';
+                h1.textContent = op2.heard;
+                hrdBody.appendChild(h1);
+              } else if (op2.type === 'extra') {
+                var h2 = document.createElement('span');
+                h2.className = 'diff-token extra';
+                h2.textContent = '+' + op2.heard;
+                hrdBody.appendChild(h2);
+              }
+            }
+          }
+          hrdCard.appendChild(hrdLbl);
+          hrdCard.appendChild(hrdBody);
+
+          stack.appendChild(expCard);
+          stack.appendChild(hrdCard);
+          bodyEl.appendChild(stack);
+        } else {
+          // 差分ハイライト（統合ビュー）
+          var box = document.createElement('div');
+          box.className = 'diff-box';
+          for (var k = 0; k < diff.ops.length; k++) {
+            var op = diff.ops[k];
+            var tok = document.createElement('span');
+            if (op.type === 'match') {
+              tok.className = 'diff-token match';
+              tok.textContent = op.expected;
+            } else if (op.type === 'miss') {
+              tok.className = 'diff-token miss';
+              tok.textContent = op.expected;
+            } else {
+              tok.className = 'diff-token extra';
+              tok.textContent = '+' + op.heard;
+            }
+            box.appendChild(tok);
+          }
+          bodyEl.appendChild(box);
+        }
       }
 
       /* -------------------------------------------------------------------
@@ -2896,17 +3444,27 @@
 
         try {
           var info = await prepareAudioForReview(blob);
+          if (info.decodeFailed) {
+            statusEl.className = 'rec-diag-status ok';
+            statusEl.textContent = '✓ ' + (labelPrefix || '録音完了') + '（元音声データのままAIへ送信可能）';
+            return;
+          }
           var durText = info.duration.toFixed(1) + '秒';
-          if (info.duration < 0.8 || info.rms < 0.01) {
+          var peakPct = info.peak < 0.01 ? (info.peak * 100).toFixed(2) : Math.round(info.peak * 100);
+          var rmsPct = (info.rms * 100).toFixed(2);
+          if (info.isTooShort || info.isSilent) {
             statusEl.className = 'rec-diag-status silent';
-            statusEl.textContent = '⚠ 録音データが無音です（長さ ' + durText + ' / マイク切替またはOS設定を確認してください）';
+            statusEl.textContent = '⚠ 音量が極小または無音です（長さ ' + durText + ' / ピーク ' + peakPct + '% / RMS ' + rmsPct + '%｜聞こえていれば強制送信可能）';
+          } else if (info.peak < 0.08) {
+            statusEl.className = 'rec-diag-status ok';
+            statusEl.textContent = '✓ ' + (labelPrefix || '録音完了') + '（長さ ' + durText + ' / ピーク ' + peakPct + '%・正常／送信時に自動音量調整）';
           } else {
             statusEl.className = 'rec-diag-status ok';
-            statusEl.textContent = '✓ ' + (labelPrefix || '録音完了') + '（長さ ' + durText + ' / 音量: 正常）';
+            statusEl.textContent = '✓ ' + (labelPrefix || '録音完了') + '（長さ ' + durText + ' / ピーク ' + peakPct + '% / 音量: 正常）';
           }
         } catch (e) {
-          statusEl.className = 'rec-diag-status silent';
-          statusEl.textContent = '⚠ 音声データのデコードに失敗しました（撮り直すか別形式のファイルをお試しください）';
+          statusEl.className = 'rec-diag-status ok';
+          statusEl.textContent = '✓ ' + (labelPrefix || '録音完了') + '（元音声データのままAIへ送信可能）';
         }
       }
 
@@ -3076,53 +3634,135 @@
       }
 
       /* -------------------------------------------------------------------
-         8. WAV変換＆無音チェック・Gemini AI 発音添削＆新規教材生成
+         8. WAV変換（全チャンネル走査＋自動音量正規化）・フォールバック・AI添削
          ------------------------------------------------------------------- */
       async function prepareAudioForReview(blob) {
+        var fallbackMime = (blob.type || state.recordedMime || 'audio/mp4').split(';')[0] || 'audio/mp4';
         var AudioCtx = window.AudioContext || window.webkitAudioContext;
-        var ctx = new AudioCtx();
-        var audio;
+        if (!AudioCtx) {
+          return {
+            decodeFailed: true,
+            sendBlob: blob,
+            sendMime: fallbackMime,
+            wasNormalized: false
+          };
+        }
+
+        var ctx = null;
+        var audio = null;
         try {
+          ctx = new AudioCtx();
           var arrBuf = await blob.arrayBuffer();
           audio = await ctx.decodeAudioData(arrBuf.slice(0));
+        } catch (decodeErr) {
+          return {
+            decodeFailed: true,
+            sendBlob: blob,
+            sendMime: fallbackMime,
+            wasNormalized: false
+          };
         } finally {
-          if (ctx.close) {
+          if (ctx && ctx.close) {
             try { ctx.close(); } catch (e) {}
           }
         }
-        var data = audio.getChannelData(0);
-        var sumSq = 0;
-        for (var i = 0; i < data.length; i++) sumSq += data[i] * data[i];
+
+        // ステレオマイクの片チャンネル（ch1等）入力にも対応するため全チャンネルを走査
+        var numCh = Math.max(1, audio.numberOfChannels || 1);
+        var bestData = audio.getChannelData(0);
+        var bestPeak = 0;
+        var bestRms = 0;
+
+        for (var chIdx = 0; chIdx < numCh; chIdx++) {
+          var chData = audio.getChannelData(chIdx);
+          var chPeak = 0;
+          var chSumSq = 0;
+          for (var i = 0; i < chData.length; i++) {
+            var s = chData[i];
+            var absS = s < 0 ? -s : s;
+            if (absS > chPeak) chPeak = absS;
+            chSumSq += s * s;
+          }
+          var chRms = Math.sqrt(chSumSq / Math.max(1, chData.length));
+          if (chPeak > bestPeak || (chPeak === bestPeak && chRms > bestRms)) {
+            bestPeak = chPeak;
+            bestRms = chRms;
+            bestData = chData;
+          }
+        }
+
+        var duration = audio.duration || 0;
+        var isSilent = bestPeak < 0.001; // -60dBFS未満のみ完全無音扱い
+        var isTooShort = duration < 0.5;
+
+        // 自動音量正規化（peakが0.001〜0.8未満なら0.85を目標に最大25倍まで増幅）
+        var gain = 1.0;
+        var wasNormalized = false;
+        if (bestPeak >= 0.001 && bestPeak < 0.8) {
+          gain = Math.min(25, 0.85 / bestPeak);
+          if (gain > 1.05) {
+            wasNormalized = true;
+          } else {
+            gain = 1.0;
+          }
+        }
+
+        var wavBlob = encodeWav(bestData, audio.sampleRate, gain);
         return {
-          duration: audio.duration,
-          rms: Math.sqrt(sumSq / Math.max(1, data.length)),
-          wavBlob: encodeWav(audio)
+          decodeFailed: false,
+          duration: duration,
+          peak: bestPeak,
+          rms: bestRms,
+          isSilent: isSilent,
+          isTooShort: isTooShort,
+          gain: gain,
+          wasNormalized: wasNormalized,
+          sendBlob: wavBlob,
+          sendMime: 'audio/wav'
         };
       }
 
-      function encodeWav(audioBuffer) {
-        var ch = audioBuffer.getChannelData(0);
-        var sr = audioBuffer.sampleRate;
-        var buf = new ArrayBuffer(44 + ch.length * 2);
+      function encodeWav(channelData, sampleRate, gain) {
+        var g = (typeof gain === 'number' && isFinite(gain) && gain > 0) ? gain : 1.0;
+        var len = channelData.length;
+        var buf = new ArrayBuffer(44 + len * 2);
         var view = new DataView(buf);
         function writeStr(off, str) {
           for (var i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i));
         }
-        writeStr(0, 'RIFF'); view.setUint32(4, 36 + ch.length * 2, true);
+        writeStr(0, 'RIFF'); view.setUint32(4, 36 + len * 2, true);
         writeStr(8, 'WAVE'); writeStr(12, 'fmt ');
         view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
-        view.setUint32(24, sr, true); view.setUint32(28, sr * 2, true);
+        view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true);
         view.setUint16(32, 2, true); view.setUint16(34, 16, true);
-        writeStr(36, 'data'); view.setUint32(40, ch.length * 2, true);
+        writeStr(36, 'data'); view.setUint32(40, len * 2, true);
         var off = 44;
-        for (var j = 0; j < ch.length; j++, off += 2) {
-          var v = Math.max(-1, Math.min(1, ch[j]));
+        for (var j = 0; j < len; j++, off += 2) {
+          var v = channelData[j] * g;
+          if (v > 1) v = 1;
+          else if (v < -1) v = -1;
           view.setInt16(off, v < 0 ? v * 0x8000 : v * 0x7FFF, true);
         }
         return new Blob([buf], { type: 'audio/wav' });
       }
 
-      async function runPronunciationReview() {
+      function showAudioNotice(prep) {
+        var noticeBox = $('review-notice-box');
+        if (!noticeBox) return;
+        if (prep && prep.decodeFailed) {
+          noticeBox.textContent = 'ℹ ブラウザでの音声デコードをスキップし、録音された元データ（' + prep.sendMime + '）をそのままAIへ送信しました。';
+          noticeBox.classList.remove('hidden');
+        } else if (prep && prep.wasNormalized) {
+          var origPct = prep.peak < 0.01 ? (prep.peak * 100).toFixed(2) : Math.round(prep.peak * 100);
+          var boostedPct = Math.min(100, Math.round(prep.peak * prep.gain * 100));
+          noticeBox.textContent = '✨ 音量が小さめだったため自動で増幅して解析しました（元ピーク: ' + origPct + '% → 約' + boostedPct + '%に補正後送信）';
+          noticeBox.classList.remove('hidden');
+        } else {
+          noticeBox.classList.add('hidden');
+        }
+      }
+
+      async function runPronunciationReview(forceSend) {
         if (!state.recordedBlob || !state.currentMaterial) {
           showToast('先に音声を録音するか、音声ファイルを読み込んでください。', 'error');
           return;
@@ -3131,30 +3771,41 @@
         var loadBox = $('review-loading-box');
         var errBox = $('review-error-box');
         var errText = $('review-error-text');
+        var forceBtn = $('force-send-btn');
+        var noticeBox = $('review-notice-box');
         var submitBtn = $('submit-review-btn');
+        var quickBtn = $('quick-transcribe-btn');
 
         errBox.classList.add('hidden');
+        if (forceBtn) forceBtn.classList.add('hidden');
+        if (noticeBox) noticeBox.classList.add('hidden');
 
-        var prep;
-        try {
-          prep = await prepareAudioForReview(state.recordedBlob);
-        } catch (e) {
-          errText.textContent = '録音データを読み込めませんでした。撮り直してください。';
+        var prep = await prepareAudioForReview(state.recordedBlob);
+        if (!forceSend && !prep.decodeFailed && (prep.isTooShort || prep.isSilent)) {
+          var durStr = prep.duration.toFixed(1) + '秒';
+          var peakStr = (prep.peak * 100).toFixed(2) + '%';
+          var rmsStr = (prep.rms * 100).toFixed(2) + '%';
+          state.pendingForceAction = 'review';
+          errText.textContent = '音声が極小または無音と判定されました（長さ: ' + durStr + ' / ピーク: ' + peakStr + ' / RMS: ' + rmsStr + '）。\n上の再生プレイヤーで自分の声が聞こえている場合は、下のボタンからそのまま送信できます。';
+          if (forceBtn) forceBtn.classList.remove('hidden');
           errBox.classList.remove('hidden');
           return;
         }
-        if (prep.duration < 0.8 || prep.rms < 0.01) {
-          errText.textContent = '音声がほぼ無音です（長さ ' + prep.duration.toFixed(1) + '秒）。上の「マイクテスト」で反応するマイクを選んでから撮り直してください。';
-          errBox.classList.remove('hidden');
-          return;
-        }
 
+        state.pendingForceAction = null;
+        showAudioNotice(prep);
+
+        $('review-loading-title').textContent = 'Gemini AIが音声データを解析中...';
+        $('review-loading-sub').textContent = prep.wasNormalized
+          ? '音量を自動増幅して送信しました・発音と音声変化を採点しています'
+          : '文字起こし・リンキング・リダクション・抑揚・明瞭度を採点しています';
         loadBox.classList.remove('hidden');
         submitBtn.disabled = true;
+        if (quickBtn) quickBtn.disabled = true;
 
         try {
-          var base64Audio = await blobToBase64(prep.wavBlob);
-          var cleanMime = 'audio/wav';
+          var base64Audio = await blobToBase64(prep.sendBlob);
+          var cleanMime = prep.sendMime;
 
           var prompt = [
             'あなたは日本のプロ英語シャドーイングコーチ（シャドテン専属講師）です。',
@@ -3163,17 +3814,18 @@
             '【お手本スクリプト】',
             state.currentMaterial.englishText,
             '',
-            '【評価基準】',
+            '【評価基準・厳守事項】',
             '1. 音声変化（リンキング・リダクション・フラッピング・同化）が自然につながっているか',
             '2. 子音・母音の明瞭さと、内容語・機能語のリズム・抑揚',
-            '3. まず音声を聞き取り heardText に書き起こすこと。heardText が空、または無関係な内容・無音の場合は score を0〜10、rank を "E" にすること',
+            '3. heardText には、お手本スクリプトを見て推測・補完せず、実際に音声から聞き取れた英単語だけを忠実に書き起こすこと（発話されていない単語や不明瞭で聞き取れない単語はお手本から補わないこと）。',
+            '4. 無音・雑音のみ・英語の発話が聞き取れない場合は、heardText を空文字 ""、score を 0、rank を "E"、goodPoints を空配列 [] にすること。',
             '',
             '【出力JSONスキーマ（厳守）】',
             '{',
-            '  "score": 85,',
-            '  "rank": "A",',
+            '  "score": <0-100の整数>,',
+            '  "rank": "<S/A/B/C/D/E>",',
             '  "summary": "全体講評（2〜3文の日本語）",',
-            '  "heardText": "AIが聞き取った英文",',
+            '  "heardText": "音声から忠実に聞き取った英文のみ（推測補完禁止）",',
             '  "goodPoints": ["良かった点1", "良かった点2"],',
             '  "phoneticAdvices": [',
             '    { "phrase": "対象フレーズ", "category": "リンキング等", "advice": "改善アドバイスと発音のコツ" }',
@@ -3193,7 +3845,7 @@
             }],
             generationConfig: {
               responseMimeType: 'application/json',
-              temperature: 0.3
+              temperature: 0.2
             }
           };
 
@@ -3206,18 +3858,36 @@
             throw new Error('採点結果を取得できませんでした。撮り直してお試しください。');
           }
           var score = Math.max(0, Math.min(100, Math.round(rawScore)));
+          var heardText = String(parsed.heardText || '').trim();
+          var summaryText = String(parsed.summary || '').trim();
+          var goodPoints = Array.isArray(parsed.goodPoints) ? parsed.goodPoints : [];
+
+          // 無音・未発話時の0点/ランクEポストガード
+          var isSilentByAI = heardText.length === 0 ||
+            summaryText.indexOf('無音') !== -1 ||
+            summaryText.indexOf('発話が確認できません') !== -1 ||
+            summaryText.indexOf('音声が聞き取れません') !== -1;
+
           var rank = parsed.rank || (score >= 90 ? 'S' : score >= 80 ? 'A' : score >= 65 ? 'B' : score >= 50 ? 'C' : score >= 30 ? 'D' : 'E');
+          if (isSilentByAI && score > 0) {
+            score = 0;
+            rank = 'E';
+            goodPoints = [];
+          } else if (score === 0) {
+            rank = 'E';
+          }
 
           var report = {
             id: 'rep-' + Date.now(),
             createdAt: new Date().toISOString(),
             materialTitle: state.currentMaterial.title,
             level: state.currentMaterial.level,
+            expectedText: state.currentMaterial.englishText,
             score: score,
             rank: rank,
-            summary: parsed.summary || 'シャドーイングお疲れ様でした！音声変化を意識するとさらに自然になります。',
-            heardText: parsed.heardText || '',
-            goodPoints: Array.isArray(parsed.goodPoints) ? parsed.goodPoints : ['リズムに乗って最後まで発話できています。'],
+            summary: summaryText || 'シャドーイングお疲れ様でした！音声変化を意識するとさらに自然になります。',
+            heardText: heardText,
+            goodPoints: goodPoints,
             phoneticAdvices: Array.isArray(parsed.phoneticAdvices) ? parsed.phoneticAdvices : [],
             wordChecks: Array.isArray(parsed.wordChecks) ? parsed.wordChecks : []
           };
@@ -3231,7 +3901,12 @@
           updateHistoryBadge();
 
           $('nav-new-badge').classList.remove('hidden');
-          showToast('AI発音添削が完了しました！', 'success');
+          showToast(
+            prep.wasNormalized
+              ? '音量を自動補正してAI発音添削が完了しました！'
+              : 'AI発音添削が完了しました！',
+            'success'
+          );
           switchTab('report');
         } catch (err) {
           errText.textContent = err.message || 'AI添削中にエラーが発生しました。';
@@ -3239,6 +3914,93 @@
         } finally {
           loadBox.classList.add('hidden');
           submitBtn.disabled = false;
+          if (quickBtn) quickBtn.disabled = false;
+        }
+      }
+
+      async function runQuickTranscription(forceSend) {
+        if (!state.recordedBlob || !state.currentMaterial) {
+          showToast('先に音声を録音するか、音声ファイルを読み込んでください。', 'error');
+          return;
+        }
+
+        var loadBox = $('review-loading-box');
+        var errBox = $('review-error-box');
+        var errText = $('review-error-text');
+        var forceBtn = $('force-send-btn');
+        var noticeBox = $('review-notice-box');
+        var submitBtn = $('submit-review-btn');
+        var quickBtn = $('quick-transcribe-btn');
+        var quickPanel = $('quick-diff-panel');
+
+        errBox.classList.add('hidden');
+        if (forceBtn) forceBtn.classList.add('hidden');
+        if (noticeBox) noticeBox.classList.add('hidden');
+
+        var prep = await prepareAudioForReview(state.recordedBlob);
+        if (!forceSend && !prep.decodeFailed && (prep.isTooShort || prep.isSilent)) {
+          var durStr = prep.duration.toFixed(1) + '秒';
+          var peakStr = (prep.peak * 100).toFixed(2) + '%';
+          var rmsStr = (prep.rms * 100).toFixed(2) + '%';
+          state.pendingForceAction = 'quick';
+          errText.textContent = '音声が極小または無音と判定されました（長さ: ' + durStr + ' / ピーク: ' + peakStr + ' / RMS: ' + rmsStr + '）。\n上の再生プレイヤーで自分の声が聞こえている場合は、下のボタンからそのまま送信できます。';
+          if (forceBtn) forceBtn.classList.remove('hidden');
+          errBox.classList.remove('hidden');
+          return;
+        }
+
+        state.pendingForceAction = null;
+        showAudioNotice(prep);
+
+        $('review-loading-title').textContent = '音声から英語を忠実に文字起こし中...';
+        $('review-loading-sub').textContent = prep.wasNormalized
+          ? '音量を自動増幅して送信しました・聞こえた英語を書き起こしています'
+          : 'お手本を見ずに聞こえた英語をそのまま書き起こし、英文と比較しています';
+        loadBox.classList.remove('hidden');
+        submitBtn.disabled = true;
+        quickBtn.disabled = true;
+
+        try {
+          var base64Audio = await blobToBase64(prep.sendBlob);
+          var prompt = [
+            'You are a strict verbatim English speech-to-text transcriber.',
+            'Listen carefully to the attached audio and transcribe ONLY the exact English words actually spoken in the audio.',
+            'Do NOT guess, invent, or autocorrect missing or mumbled words.',
+            'If the audio is silent, noise-only, or contains no intelligible English speech, return an empty string "".',
+            'Return JSON only in this exact schema:',
+            '{ "heardText": "transcribed English words here" }'
+          ].join('\n');
+
+          var payload = {
+            contents: [{
+              parts: [
+                { text: prompt },
+                { inlineData: { mimeType: prep.sendMime, data: base64Audio } }
+              ]
+            }],
+            generationConfig: {
+              responseMimeType: 'application/json',
+              temperature: 0.0
+            }
+          };
+
+          var res = await callGeminiApi(payload);
+          var rawText = res.data.candidates[0].content.parts[0].text;
+          var parsed = parseJsonSafe(rawText);
+
+          state.quickExpectedText = state.currentMaterial.englishText || '';
+          state.quickHeardText = String(parsed.heardText || '').trim();
+
+          renderDiffWidget('quick', state.quickExpectedText, state.quickHeardText, state.quickDiffMode);
+          quickPanel.classList.remove('hidden');
+          showToast('聞き取りテキスト化＆比較が完了しました！', 'success');
+        } catch (err) {
+          errText.textContent = err.message || '文字起こし中にエラーが発生しました。';
+          errBox.classList.remove('hidden');
+        } finally {
+          loadBox.classList.add('hidden');
+          submitBtn.disabled = false;
+          quickBtn.disabled = false;
         }
       }
 
@@ -3336,6 +4098,19 @@
         $('rep-score').textContent = rep.score;
         $('rep-summary').textContent = rep.summary;
         $('rep-heard').textContent = rep.heardText || '（なし）';
+
+        // 発話テキスト化＆お手本英文との比較カードを描画（旧履歴はタイトル一致から補完）
+        var expectedForRep = rep.expectedText || '';
+        if (!expectedForRep && rep.materialTitle) {
+          var allMats = getAllMaterials();
+          for (var mIdx = 0; mIdx < allMats.length; mIdx++) {
+            if (allMats[mIdx].title === rep.materialTitle) {
+              expectedForRep = allMats[mIdx].englishText;
+              break;
+            }
+          }
+        }
+        renderDiffWidget('rep', expectedForRep, rep.heardText || '', state.repDiffMode);
 
         var badge = $('rep-rank-badge');
         badge.textContent = rep.rank;
@@ -3635,6 +4410,23 @@
         $('header-api-btn').addEventListener('click', function () {
           switchTab('settings');
         });
+        $('download-html-btn').addEventListener('click', function () {
+          try {
+            var htmlStr = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+            var blob = new Blob([htmlStr], { type: 'text/html;charset=utf-8' });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'shadoten_ai.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+            showToast('shadoten_ai.html をダウンロードしました！', 'success');
+          } catch (e) {
+            showToast('HTMLのダウンロードに失敗しました。', 'error');
+          }
+        });
 
         // AI新規教材パネル開閉＆生成
         $('toggle-ai-gen-btn').addEventListener('click', function () {
@@ -3767,9 +4559,46 @@
         });
         $('retry-rec-btn').addEventListener('click', function () {
           $('recorded-preview-box').classList.add('hidden');
+          $('quick-diff-panel').classList.add('hidden');
+          $('review-notice-box').classList.add('hidden');
           startRecording();
         });
-        $('submit-review-btn').addEventListener('click', runPronunciationReview);
+        $('submit-review-btn').addEventListener('click', function () {
+          runPronunciationReview(false);
+        });
+        $('quick-transcribe-btn').addEventListener('click', function () {
+          runQuickTranscription(false);
+        });
+        $('force-send-btn').addEventListener('click', function () {
+          if (state.pendingForceAction === 'quick') runQuickTranscription(true);
+          else runPronunciationReview(true);
+        });
+        $('close-quick-diff-btn').addEventListener('click', function () {
+          $('quick-diff-panel').classList.add('hidden');
+        });
+        $('quick-copy-heard-btn').addEventListener('click', function () {
+          copyTextToClipboard(state.quickHeardText);
+        });
+        $('rep-copy-heard-btn').addEventListener('click', function () {
+          copyTextToClipboard(state.currentReport ? state.currentReport.heardText : '');
+        });
+
+        // 差分比較ビュー切替（レポート＆クイック共通）
+        var diffModeBtns = document.querySelectorAll('[data-diff-target]');
+        for (var dm = 0; dm < diffModeBtns.length; dm++) {
+          diffModeBtns[dm].addEventListener('click', function () {
+            var target = this.getAttribute('data-diff-target');
+            var mode = this.getAttribute('data-diff-mode');
+            if (target === 'quick') {
+              state.quickDiffMode = mode;
+              renderDiffWidget('quick', state.quickExpectedText, state.quickHeardText, mode);
+            } else if (target === 'rep' && state.currentReport) {
+              state.repDiffMode = mode;
+              renderReport(state.currentReport);
+            }
+          });
+        }
+
         $('goto-settings-err-btn').addEventListener('click', function () {
           switchTab('settings');
         });
